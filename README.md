@@ -1,6 +1,6 @@
 # 📦 Zendrian Warehouse
 
-A web-based warehouse inventory management and stocktaking application built with Flask. Features barcode scanning, location-based inventory tracking, spot-check auditing, session management, user authentication, and admin tools.
+A web-based warehouse stocktaking application built with Flask. Features barcode scanning, location-based inventory tracking, spot-check auditing, session management, user authentication, and admin tools.
 
 Designed to allow rapid and continuous stock counting with a barcode scanner. Consider connecting a bluetooth scanner to your tablet for rapid stock counts. Assumes that your stock locations contain two dots (i.e. A.1.1 aisle–bay–level style codes) for parsing. In the current version of Zendrian Warehouse, this isn't configurable. As is always the case in warehouses, barcode everything for speed.
 
