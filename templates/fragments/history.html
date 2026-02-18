@@ -1,0 +1,22 @@
+<h3>🕐 Recent Scans</h3>
+{% if recent %}
+<div class="history-list">
+    {% for entry in recent %}
+    <div class="history-item history-{{ entry.scan_type | lower }}">
+        <span class="history-type">
+            {% if entry.scan_type == 'ADD' %}+{{ entry.quantity_change }}
+            {% elif entry.scan_type == 'SUBTRACT' %}{{ entry.quantity_change }}
+            {% elif entry.scan_type == 'BULK' %}+{{ entry.quantity_change }}
+            {% elif entry.scan_type == 'ADJUST' %}adj {{ entry.quantity_change }}
+            {% endif %}
+        </span>
+        <span class="history-sku">{{ entry.sku }}</span>
+        <span class="history-location">{{ entry.location }}</span>
+        <span class="history-total">→ {{ entry.running_total }}</span>
+        <span class="history-time">{{ entry.scanned_at.strftime('%H:%M:%S') }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="empty-state">No scans yet.</p>
+{% endif %}

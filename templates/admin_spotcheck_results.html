@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}Zendrian Warehouse — Spot Check Results{% endblock %}
+
+{% block body %}
+<div class="admin-panel">
+    <header class="admin-header">
+        <div class="admin-header-left">
+            <a href="{{ url_for('admin.index') }}" class="btn btn-secondary btn-small">← Back to Admin</a>
+            <h1>🔍 Spot Check Results</h1>
+        </div>
+    </header>
+
+    <main class="admin-content">
+        <!-- Result Banner -->
+        {% if spotcheck.status == 'completed' %}
+            {% if spotcheck.result == 'match' %}
+            <div class="spotcheck-result-banner spotcheck-match">
+                <span class="spotcheck-result-icon">✅</span>
+                <div class="spotcheck-result-text">
+                    <strong>All Locations Match</strong>
+                    <span>No discrepancies found between original scan and spot check.</span>
+                </div>
+            </div>
+            {% elif spotcheck.result == 'mismatch' %}
+            <div class="spotcheck-result-banner spotcheck-mismatch">
+                <span class="spotcheck-result-icon">❌</span>
+                <div class="spotcheck-result-text">
+                    <strong>Mismatches Found</strong>
+                    <span>{{ mismatches | length }} discrepanc{{ 'y' if mismatches | length == 1 else 'ies' }} detected.</span>
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="spotcheck-result-banner spotcheck-pending">
+                <span class="spotcheck-result-icon">⏳</span>
+                <div class="spotcheck-result-text">
+                    <strong>{{ spotcheck.status | title }}</strong>
+                    <span>This spot check has not been completed yet.</span>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Session Info -->
+        <div class="spotcheck-info-grid">
+            <section class="card">
+                <h2>📋 Original Session</h2>
+                <div class="spotcheck-detail-list">
+                    <div class="spotcheck-detail">
+                        <span class="detail-label">Session Code</span>
+                        <span class="detail-value">#{{ spotcheck.original_session.session_code }}</span>
+                    </div>
+                    <div class="spotcheck-detail">
+                        <span class="detail-label">Owner</span>
+                        <span class="detail-value">{{ spotcheck.original_session.operator.display_name }}</span>
+                    </div>
+                    <div class="spotcheck-detail">
+                        <span class="detail-label">Total Locations</span>
+                        <span class="detail-value">{{ spotcheck.original_session.unique_locations }}</span>
+                    </div>
+                    <div class="spotcheck-detail">
+                        <span class="detail-label">Total Items</span>
+                        <span class="detail-value">{{ spotcheck.original_session.total_items }}</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>🔍 Spot Check Session</h2>
+                <div class="spotcheck-detail-list">
+                    <div class="spotcheck-detail">
+                        <span class="detail-label">Session Code</span>
+                        <span class="detail-value">#{{ spotcheck.spotcheck_session.session_code }}</span>
+                    </div>
+                    <div class="spotcheck-detail">
+                        <span class="detail-label">Assigned To</span>
+                        <span class="detail-value">{{ spotcheck.assigned_user }}</span>
+                    </div>
+                    <div class="spotcheck-detail">
+                        <span class="detail-label">Selection Mode</span>
+                        <span class="detail-value">{{ spotcheck.selection_mode | title }}{% if spotcheck.selection_percentage %} ({{ spotcheck.selection_percentage }}%){% endif %}</span>
+                    </div>
+                    <div class="spotcheck-detail">
+                        <span class="detail-label">Status</span>
+                        <span class="detail-value">
+                            <span class="status-badge status-{{ spotcheck.status }}">{{ spotcheck.status | title }}</span>
+                        </span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Statistics -->
+        {% if confidence_stats %}
+        <section class="card">
+            <h2>📊 Statistical Analysis</h2>
+            <div class="spotcheck-stats-grid">
+                <div class="spotcheck-stat-card">
+                    <span class="spotcheck-stat-number">{{ confidence_stats.sample_size }}</span>
+                    <span class="spotcheck-stat-label">Locations Checked</span>
+                </div>
+                <div class="spotcheck-stat-card">
+                    <span class="spotcheck-stat-number">{{ confidence_stats.total_locations }}</span>
+                    <span class="spotcheck-stat-label">Total Locations</span>
+                </div>
+                <div class="spotcheck-stat-card">
+                    <span class="spotcheck-stat-number">{{ confidence_stats.sample_percentage }}%</span>
+                    <span class="spotcheck-stat-label">Sample Size</span>
+                </div>
+                <div class="spotcheck-stat-card">
+                    <span class="spotcheck-stat-number">{{ confidence_stats.mismatch_locations }}</span>
+                    <span class="spotcheck-stat-label">Locations with Errors</span>
+                </div>
+            </div>
+
+            <div class="spotcheck-confidence-desc">
+                <p>{{ confidence_stats.description }}</p>
+            </div>
+
+            {% if confidence_stats.detection_probs is defined and confidence_stats.detection_probs %}
+            <div class="spotcheck-detection-table">
+                <h3>Detection Probability</h3>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>If # Locations Had Errors</th>
+                            <th>Probability of Detection</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dp in confidence_stats.detection_probs %}
+                        <tr>
+                            <td>{{ dp.assumed_defects }} location{{ 's' if dp.assumed_defects != 1 }}</td>
+                            <td><strong>{{ dp.detection_probability }}%</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            {% if confidence_stats.upper_bound_rate is defined %}
+            <div class="spotcheck-confidence-note">
+                <p class="text-muted">
+                    <strong>95% Upper Confidence Bound:</strong>
+                    At most {{ confidence_stats.upper_bound_defects }} of {{ confidence_stats.total_locations }} locations
+                    ({{ confidence_stats.upper_bound_rate }}%) are likely to have errors.
+                </p>
+            </div>
+            {% endif %}
+
+            {% if confidence_stats.estimated_defect_rate is defined %}
+            <div class="spotcheck-confidence-note spotcheck-warning-note">
+                <p>
+                    <strong>Estimated Error Rate:</strong>
+                    {{ confidence_stats.estimated_defect_rate }}% — approximately {{ confidence_stats.estimated_total_defects }}
+                    of {{ confidence_stats.total_locations }} locations may have errors.
+                </p>
+            </div>
+            {% endif %}
+        </section>
+        {% endif %}
+
+        <!-- Checked Locations -->
+        <section class="card">
+            <h2>📍 Checked Locations ({{ selected_locations | length }})</h2>
+            <div class="spotcheck-locations-list">
+                {% for loc in selected_locations %}
+                <span class="spotcheck-loc-badge">{{ loc }}</span>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Mismatch Details -->
+        {% if mismatches %}
+        <section class="card">
+            <h2>⚠️ Mismatch Details</h2>
+            <div class="admin-session-list">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Location</th>
+                            <th>SKU</th>
+                            <th>Expected</th>
+                            <th>Actual</th>
+                            <th>Difference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in mismatches %}
+                        <tr class="{% if m.difference > 0 %}row-surplus{% else %}row-deficit{% endif %}">
+                            <td class="loc-name">{{ m.location }}</td>
+                            <td class="sku-cell">{{ m.sku }}</td>
+                            <td>{{ m.expected }}</td>
+                            <td>{{ m.actual }}</td>
+                            <td class="{% if m.difference > 0 %}text-surplus{% else %}text-deficit{% endif %}">
+                                {{ '+' if m.difference > 0 }}{{ m.difference }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}

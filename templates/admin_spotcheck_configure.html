@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Zendrian Warehouse — Configure Spot Check{% endblock %}
+
+{% block body %}
+<div class="admin-panel">
+    <header class="admin-header">
+        <div class="admin-header-left">
+            <a href="{{ url_for('admin.spotcheck_select') }}" class="btn btn-secondary btn-small">← Back</a>
+            <h1>🔍 Configure Spot Check — Step 2</h1>
+        </div>
+    </header>
+
+    <main class="admin-content">
+        <!-- Session Info -->
+        <section class="card">
+            <h2>📋 Original Session: #{{ sess.session_code }}</h2>
+            <div class="spotcheck-session-info">
+                <span><strong>Owner:</strong> {{ sess.operator.display_name }}{% if sess.owner %} ({{ sess.owner }}){% endif %}</span>
+                <span><strong>Items:</strong> {{ sess.total_items }}</span>
+                <span><strong>Locations:</strong> {{ sess.unique_locations }}</span>
+                <span><strong>Scans:</strong> {{ sess.total_scans }}</span>
+                <span><strong>Closed:</strong> {{ sess.closed_at.strftime('%Y-%m-%d %H:%M') if sess.closed_at else '—' }}</span>
+            </div>
+        </section>
+
+        <!-- Configuration Form -->
+        <form method="POST" action="{{ url_for('admin.spotcheck_create') }}" id="spotcheck-form">
+            <input type="hidden" name="original_session_id" value="{{ sess.id }}">
+
+            <!-- User Assignment -->
+            <section class="card">
+                <h2>👤 Assign To</h2>
+                <div class="form-group">
+                    <label for="assigned_user">Select User</label>
+                    <select name="assigned_user" id="assigned_user" class="form-input" required>
+                        <option value="">— Choose a user —</option>
+                        {% for user in users %}
+                        <option value="{{ user.username }}">{{ user.display_name }} ({{ user.username }}){% if user.is_admin %} [Admin]{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </section>
+
+            <!-- Selection Mode -->
+            <section class="card">
+                <h2>📍 Location Selection</h2>
+
+                <!-- Mode Tabs -->
+                <div class="spotcheck-mode-tabs">
+                    <button type="button" class="spotcheck-tab active" onclick="switchMode('percentage')" id="tab-percentage">
+                        📊 Select by Percentage
+                    </button>
+                    <button type="button" class="spotcheck-tab" onclick="switchMode('specific')" id="tab-specific">
+                        ☑️ Select Specific Locations
+                    </button>
+                </div>
+
+                <!-- Percentage Mode -->
+                <div id="mode-percentage" class="spotcheck-mode-panel">
+                    <input type="hidden" name="selection_mode" id="selection_mode" value="percentage">
+                    <p class="text-muted" style="margin-bottom: 12px;">
+                        Randomly select a percentage of locations to verify.
+                    </p>
+                    <div class="form-group">
+                        <label for="selection_percentage">Percentage of Locations</label>
+                        <select name="selection_percentage" id="selection_percentage" class="form-input">
+                            <option value="10">10% ({{ ((locations | length) * 0.1) | round(0, 'ceil') | int }} of {{ locations | length }} locations)</option>
+                            <option value="20">20% ({{ ((locations | length) * 0.2) | round(0, 'ceil') | int }} of {{ locations | length }} locations)</option>
+                            <option value="30" selected>30% ({{ ((locations | length) * 0.3) | round(0, 'ceil') | int }} of {{ locations | length }} locations)</option>
+                            <option value="50">50% ({{ ((locations | length) * 0.5) | round(0, 'ceil') | int }} of {{ locations | length }} locations)</option>
+                            <option value="75">75% ({{ ((locations | length) * 0.75) | round(0, 'ceil') | int }} of {{ locations | length }} locations)</option>
+                            <option value="100">100% ({{ locations | length }} of {{ locations | length }} locations)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Specific Mode -->
+                <div id="mode-specific" class="spotcheck-mode-panel" style="display: none;">
+                    <p class="text-muted" style="margin-bottom: 12px;">
+                        Select specific locations to verify. Check the locations you want included in the spot check.
+                    </p>
+                    <div class="spotcheck-select-actions" style="margin-bottom: 8px;">
+                        <button type="button" class="btn btn-secondary btn-small" onclick="selectAllLocations()">Select All</button>
+                        <button type="button" class="btn btn-secondary btn-small" onclick="deselectAllLocations()">Deselect All</button>
+                        <span class="text-muted" id="selected-count">0 of {{ locations | length }} selected</span>
+                    </div>
+                    {% if locations %}
+                    <div class="spotcheck-location-grid">
+                        {% for loc in locations %}
+                        <label class="spotcheck-location-item">
+                            <input type="checkbox" name="locations" value="{{ loc.location }}" onchange="updateSelectedCount()">
+                            <span class="spotcheck-loc-name">{{ loc.location }}</span>
+                            <span class="spotcheck-loc-stats">{{ loc.sku_count }} SKUs · {{ loc.total_items }} items</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <p>No locations found in this session.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Submit -->
+            <section class="card">
+                <button type="submit" class="btn btn-primary btn-large">
+                    🔍 Create Spot Check
+                </button>
+            </section>
+        </form>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function switchMode(mode) {
+        document.getElementById('selection_mode').value = mode;
+
+        // Toggle panels
+        document.getElementById('mode-percentage').style.display = mode === 'percentage' ? 'block' : 'none';
+        document.getElementById('mode-specific').style.display = mode === 'specific' ? 'block' : 'none';
+
+        // Toggle tab active state
+        document.getElementById('tab-percentage').classList.toggle('active', mode === 'percentage');
+        document.getElementById('tab-specific').classList.toggle('active', mode === 'specific');
+    }
+
+    function selectAllLocations() {
+        document.querySelectorAll('input[name="locations"]').forEach(cb => cb.checked = true);
+        updateSelectedCount();
+    }
+
+    function deselectAllLocations() {
+        document.querySelectorAll('input[name="locations"]').forEach(cb => cb.checked = false);
+        updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+        const total = document.querySelectorAll('input[name="locations"]').length;
+        const selected = document.querySelectorAll('input[name="locations"]:checked').length;
+        document.getElementById('selected-count').textContent = selected + ' of ' + total + ' selected';
+    }
+</script>
+{% endblock %}

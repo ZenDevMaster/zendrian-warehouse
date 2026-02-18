@@ -1,0 +1,34 @@
+# ============================================================
+# Zendrian Warehouse — MariaDB Override
+# Usage: docker compose -f docker-compose.yml -f docker-compose.mariadb.yml up -d
+# ============================================================
+
+services:
+  warehouse:
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=mysql+pymysql://warehouse_user:warehouse_pass@mariadb:3306/zendrian_warehouse
+
+  mariadb:
+    image: mariadb:11
+    container_name: zendrian-mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: zendrian_warehouse
+      MYSQL_USER: warehouse_user
+      MYSQL_PASSWORD: warehouse_pass
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+
+volumes:
+  mariadb_data:
+    driver: local

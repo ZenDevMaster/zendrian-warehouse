@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Zendrian Warehouse — Admin Panel{% endblock %}
+
+{% block body %}
+<div class="admin-panel">
+    <header class="admin-header">
+        <div class="admin-header-left">
+            <h1>⚙️ Admin Panel</h1>
+        </div>
+        <div class="admin-header-right">
+            <a href="{{ url_for('admin.users') }}" class="btn btn-secondary btn-small">👥 Manage Users</a>
+            <a href="{{ url_for('admin.spotcheck_select') }}" class="btn btn-primary btn-small">🔍 New Spot Check</a>
+        </div>
+    </header>
+
+    <main class="admin-content">
+        <!-- Summary Cards -->
+        <div class="admin-summary">
+            <div class="summary-card summary-open">
+                <span class="summary-number">{{ open_count }}</span>
+                <span class="summary-label">Open Sessions</span>
+            </div>
+            <div class="summary-card summary-closed">
+                <span class="summary-number">{{ closed_count }}</span>
+                <span class="summary-label">Closed Sessions</span>
+            </div>
+            <div class="summary-card summary-users">
+                <span class="summary-number">{{ user_count }}</span>
+                <span class="summary-label">Users</span>
+            </div>
+            <div class="summary-card summary-spotchecks">
+                <span class="summary-number">{{ spotchecks | length }}</span>
+                <span class="summary-label">Spot Checks</span>
+            </div>
+        </div>
+
+        <!-- Spot Checks Section -->
+        <section class="card">
+            <h2>🔍 Spot Checks</h2>
+
+            {% if spotchecks %}
+            <div class="admin-session-list">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Original Session</th>
+                            <th>Assigned To</th>
+                            <th>Locations</th>
+                            <th>Status</th>
+                            <th>Result</th>
+                            <th>Confidence</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sc in spotchecks %}
+                        <tr>
+                            <td>#{{ sc.id }}</td>
+                            <td class="session-code-cell">#{{ sc.original_session.session_code }}</td>
+                            <td>{{ sc.assigned_user }}</td>
+                            <td>
+                                {% set locs = sc.selected_locations | from_json if sc.selected_locations else [] %}
+                                {{ locs | length if locs is iterable else '?' }}
+                            </td>
+                            <td>
+                                <span class="status-badge status-{{ sc.status }}">
+                                    {% if sc.status == 'pending' %}⏳{% elif sc.status == 'in_progress' %}🔄{% elif sc.status == 'completed' %}✓{% endif %}
+                                    {{ sc.status | title }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if sc.result == 'match' %}
+                                <span class="spotcheck-dot spotcheck-dot-match" title="All locations match">● Match</span>
+                                {% elif sc.result == 'mismatch' %}
+                                <span class="spotcheck-dot spotcheck-dot-mismatch" title="Mismatches found">● Mismatch</span>
+                                {% else %}
+                                <span class="spotcheck-dot spotcheck-dot-pending">● —</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if sc.confidence_score is not none %}
+                                {{ sc.confidence_score }}%
+                                {% else %}
+                                —
+                                {% endif %}
+                            </td>
+                            <td class="text-muted">{{ sc.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.spotcheck_results', spotcheck_id=sc.id) }}" class="btn btn-secondary btn-small">📊 View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>No spot checks yet. <a href="{{ url_for('admin.spotcheck_select') }}">Create one</a> to verify a completed stocktake.</p>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- All Sessions -->
+        <section class="card">
+            <h2>📋 All Sessions</h2>
+
+            {% if sessions %}
+            <div class="admin-session-list">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Owner</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Scans</th>
+                            <th>Items</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sess in sessions %}
+                        <tr class="{{ 'row-active' if sess.is_open else 'row-closed' }}">
+                            <td class="session-code-cell">#{{ sess.session_code }}</td>
+                            <td>{{ sess.operator.display_name }}{% if sess.owner %} <span class="text-muted">({{ sess.owner }})</span>{% endif %}</td>
+                            <td>
+                                {% if sess.session_type == 'spotcheck' %}
+                                <span class="status-badge status-spotcheck">🔍 Spot Check</span>
+                                {% else %}
+                                <span class="text-muted">Normal</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if sess.is_open %}
+                                <span class="status-badge status-open">● Open</span>
+                                {% else %}
+                                <span class="status-badge status-closed">● Closed</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted">{{ sess.started_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ sess.total_scans }}</td>
+                            <td>{{ sess.total_items }}</td>
+                            <td class="action-cell">
+                                <div class="admin-actions">
+                                    {% if sess.is_open %}
+                                    <a href="{{ url_for('scanning.scan_view', session_id=sess.id) }}" class="btn btn-primary btn-small">▶ View</a>
+                                    <form method="POST" action="{{ url_for('admin.close_session', session_id=sess.id) }}" style="display:inline">
+                                        <button type="submit" class="btn btn-secondary btn-small" onclick="return confirm('Close session #{{ sess.session_code }}?')">⏹ Close</button>
+                                    </form>
+                                    {% else %}
+                                    <form method="POST" action="{{ url_for('admin.resume_session', session_id=sess.id) }}" style="display:inline">
+                                        <button type="submit" class="btn btn-primary btn-small">🔄 Reopen</button>
+                                    </form>
+                                    <a href="{{ url_for('scanning.export_summary', session_id=sess.id) }}" class="btn btn-secondary btn-small">📥 CSV</a>
+                                    {% endif %}
+                                    <form method="POST" action="{{ url_for('admin.delete_session', session_id=sess.id) }}" style="display:inline">
+                                        <button type="submit" class="btn btn-danger btn-small" onclick="return confirm('DELETE session #{{ sess.session_code }} and ALL its data? This cannot be undone!')">🗑 Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>No sessions yet. Sessions will appear here when users create them.</p>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+</div>
+{% endblock %}

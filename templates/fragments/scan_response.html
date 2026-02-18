@@ -1,0 +1,72 @@
+{# Primary target: feedback area #}
+{% include "fragments/feedback.html" %}
+
+{# Out-of-band swaps: update other sections simultaneously #}
+
+{# Update stats bar #}
+<div id="stats-bar" hx-swap-oob="innerHTML">
+    {% include "fragments/stats.html" %}
+</div>
+
+{# Update location banner #}
+<div id="location-banner" hx-swap-oob="outerHTML">
+    <div class="location-banner {% if current_location %}location-active{% else %}location-empty{% endif %}" id="location-banner">
+        {% if current_location %}
+            <span class="location-icon">📍</span>
+            <span class="location-name">{{ current_location }}</span>
+        {% else %}
+            <span class="location-icon">⚠️</span>
+            <span class="location-name">No location set — scan a location barcode</span>
+        {% endif %}
+    </div>
+</div>
+
+{# Update inventory table #}
+<div id="inventory-area" hx-swap-oob="innerHTML">
+    {% include "fragments/inventory.html" %}
+</div>
+
+{# Update history #}
+<div id="history-area" hx-swap-oob="innerHTML">
+    {% include "fragments/history.html" %}
+</div>
+
+{# Update locations sidebar #}
+<div id="locations-area" hx-swap-oob="innerHTML">
+    {% include "fragments/locations.html" %}
+</div>
+
+{# Update spot check progress if applicable #}
+{% if spotcheck_progress %}
+<div id="spotcheck-progress" hx-swap-oob="outerHTML">
+    <div class="spotcheck-progress-banner" id="spotcheck-progress">
+        <div class="spotcheck-progress-info">
+            <span class="spotcheck-progress-label">🔍 Spot Check Progress:</span>
+            <span class="spotcheck-progress-count">{{ spotcheck_progress.done }} of {{ spotcheck_progress.total }} locations checked</span>
+        </div>
+        <div class="spotcheck-progress-bar">
+            <div class="spotcheck-progress-fill" style="width: {{ (spotcheck_progress.done / spotcheck_progress.total * 100) if spotcheck_progress.total > 0 else 0 }}%"></div>
+        </div>
+    </div>
+</div>
+
+<div id="spotcheck-checklist" hx-swap-oob="innerHTML">
+    <h3>🔍 Locations to Check</h3>
+    <div class="spotcheck-checklist">
+        {% for loc in spotcheck_progress.selected %}
+        <div class="spotcheck-checklist-item {% if loc in spotcheck_progress.scanned %}spotcheck-checked{% endif %}">
+            <span class="spotcheck-check-icon">
+                {% if loc in spotcheck_progress.scanned %}✅{% else %}⬜{% endif %}
+            </span>
+            <span class="spotcheck-check-loc">{{ loc }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="spotcheck-checklist-summary">
+        {{ spotcheck_progress.done }}/{{ spotcheck_progress.total }} complete
+        {% if spotcheck_progress.done == spotcheck_progress.total %}
+        — <strong>All done! Close session to see results.</strong>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

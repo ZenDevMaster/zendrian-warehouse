@@ -1,0 +1,7 @@
+Flask==3.1.0
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+gunicorn==23.0.0
+
+# Optional: MySQL/MariaDB support (uncomment if using MySQL/MariaDB)
+# PyMySQL>=1.1.0

@@ -1,0 +1,26 @@
+# ============================================================
+# Zendrian Warehouse — Standalone Docker Compose
+# Usage: docker compose up -d
+# ============================================================
+
+services:
+  warehouse:
+    image: ghcr.io/zendevmaster/zendrian-warehouse:latest
+    container_name: zendrian-warehouse
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - warehouse_data:/app/instance
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/login"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+volumes:
+  warehouse_data:
+    driver: local

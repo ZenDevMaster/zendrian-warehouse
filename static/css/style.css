@@ -1,0 +1,1512 @@
+/* ============================================================
+   Zendrian Warehouse — Tablet-first responsive CSS
+   ============================================================ */
+
+/* --- Reset & Base --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --success: #16a34a;
+    --success-bg: #dcfce7;
+    --error: #dc2626;
+    --error-bg: #fee2e2;
+    --warning: #f59e0b;
+    --warning-bg: #fef3c7;
+    --neutral: #64748b;
+    --neutral-bg: #f1f5f9;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-lg: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* --- Header --- */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: var(--card-bg);
+    border-bottom: 2px solid var(--primary);
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    gap: 12px;
+}
+
+.header h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.header-left, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.header-center {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: 0.85rem;
+}
+
+.session-badge {
+    background: var(--primary);
+    color: white;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.user-badge {
+    background: var(--neutral-bg);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.stat {
+    white-space: nowrap;
+}
+
+.stat strong {
+    color: var(--primary);
+}
+
+.stat-sep {
+    color: var(--border);
+    margin: 0 2px;
+}
+
+/* --- Buttons --- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, transform 0.1s;
+    min-height: 44px;
+    min-width: 44px;
+    gap: 6px;
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.btn-secondary {
+    background: var(--neutral-bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.btn-danger {
+    background: var(--error);
+    color: white;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    min-height: 36px;
+}
+
+.btn-large {
+    padding: 16px 32px;
+    font-size: 1.1rem;
+}
+
+.btn-block {
+    display: flex;
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+/* --- Cards --- */
+.card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 12px;
+}
+
+.card h2 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+}
+
+.card h3 {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    color: var(--text-muted);
+}
+
+/* --- Dashboard --- */
+.dashboard {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.dashboard-content {
+    padding: 16px;
+}
+
+.session-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.session-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    border-left: 4px solid;
+    background: var(--card-bg);
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.session-open {
+    border-left-color: var(--success);
+}
+
+.session-closed {
+    border-left-color: var(--neutral);
+}
+
+.session-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.session-code {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.session-operator {
+    font-weight: 500;
+}
+
+.session-stats {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.session-time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.session-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+/* --- Location Banner --- */
+.location-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    gap: 8px;
+    transition: background 0.3s;
+}
+
+.location-active {
+    background: var(--success-bg);
+    color: var(--success);
+    border-bottom: 3px solid var(--success);
+}
+
+.location-empty {
+    background: var(--warning-bg);
+    color: var(--warning);
+    border-bottom: 3px solid var(--warning);
+}
+
+.location-icon {
+    font-size: 1.5rem;
+}
+
+/* --- Mode Banner --- */
+.mode-banner {
+    text-align: center;
+    padding: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.mode-subtract {
+    background: var(--error-bg);
+    color: var(--error);
+    border-bottom: 2px solid var(--error);
+}
+
+.mode-bulk {
+    background: #dbeafe;
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+}
+
+/* --- Scan Input --- */
+.scan-input-wrapper {
+    padding: 8px 16px;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+}
+
+.scan-input-field {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 1.1rem;
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    outline: none;
+    background: #f0f7ff;
+    font-family: monospace;
+}
+
+.scan-input-field:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+/* --- Focus Overlay --- */
+.focus-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    cursor: pointer;
+}
+
+.focus-overlay-content {
+    background: white;
+    padding: 32px 48px;
+    border-radius: 16px;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.focus-icon {
+    font-size: 3rem;
+}
+
+/* --- Scan Content Layout --- */
+.scan-content {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 12px;
+    padding: 12px 16px;
+    min-height: calc(100vh - 200px);
+}
+
+.scan-main {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.scan-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sidebar-card {
+    padding: 12px;
+}
+
+/* --- Feedback Toast --- */
+.feedback-toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-radius: var(--radius);
+    font-size: 1.05rem;
+    font-weight: 500;
+    animation: feedbackSlide 0.3s ease-out;
+    flex-wrap: wrap;
+}
+
+@keyframes feedbackSlide {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.feedback-success {
+    background: var(--success-bg);
+    color: var(--success);
+    border-left: 4px solid var(--success);
+}
+
+.feedback-error {
+    background: var(--error-bg);
+    color: var(--error);
+    border-left: 4px solid var(--error);
+}
+
+.feedback-idle {
+    background: var(--neutral-bg);
+    color: var(--text-muted);
+    border-left: 4px solid var(--neutral);
+}
+
+.feedback-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.feedback-detail {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    width: 100%;
+}
+
+/* --- Inventory Table --- */
+.inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.inventory-table th {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 2px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.inventory-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.sku-cell {
+    font-family: monospace;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.qty-cell {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--primary);
+}
+
+.action-cell {
+    text-align: right;
+}
+
+.inline-adjust {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: flex-end;
+}
+
+.qty-input {
+    width: 70px;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.item-count {
+    font-weight: 400;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+/* --- History --- */
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.history-item {
+    display: grid;
+    grid-template-columns: 50px 1fr auto auto;
+    gap: 6px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    align-items: center;
+}
+
+.history-add {
+    background: var(--success-bg);
+}
+
+.history-subtract {
+    background: var(--error-bg);
+}
+
+.history-bulk {
+    background: #dbeafe;
+}
+
+.history-adjust {
+    background: var(--warning-bg);
+}
+
+.history-type {
+    font-weight: 700;
+    font-family: monospace;
+}
+
+.history-sku {
+    font-family: monospace;
+    font-weight: 500;
+}
+
+.history-location {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.history-total {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.history-time {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+/* --- Locations Sidebar --- */
+.location-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.location-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.15s;
+    min-height: 44px;
+}
+
+.location-item:hover {
+    background: var(--neutral-bg);
+}
+
+.location-current {
+    background: var(--success-bg);
+    font-weight: 600;
+}
+
+.loc-name {
+    font-family: monospace;
+    font-weight: 600;
+}
+
+.loc-stats {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* --- Bulk Input --- */
+.bulk-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.2rem;
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+/* --- Action Buttons --- */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* --- Empty State --- */
+.empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 16px;
+    font-style: italic;
+}
+
+/* ============================================================
+   Flash Messages
+   ============================================================ */
+.flash-messages {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 8px 16px 0;
+}
+
+.flash-msg {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+    animation: feedbackSlide 0.3s ease-out;
+    position: relative;
+}
+
+.flash-success {
+    background: var(--success-bg);
+    color: var(--success);
+    border-left: 4px solid var(--success);
+}
+
+.flash-error {
+    background: var(--error-bg);
+    color: var(--error);
+    border-left: 4px solid var(--error);
+}
+
+.flash-info {
+    background: #dbeafe;
+    color: var(--primary);
+    border-left: 4px solid var(--primary);
+}
+
+.flash-close {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.6;
+    padding: 4px 8px;
+    line-height: 1;
+}
+
+.flash-close:hover {
+    opacity: 1;
+}
+
+/* ============================================================
+   Admin Panel
+   ============================================================ */
+.admin-panel {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.admin-header h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.admin-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-content {
+    padding: 0 16px 16px;
+}
+
+/* Summary Cards */
+.admin-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.summary-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    border-top: 3px solid;
+}
+
+.summary-open {
+    border-top-color: var(--success);
+}
+
+.summary-closed {
+    border-top-color: var(--neutral);
+}
+
+.summary-users {
+    border-top-color: var(--primary);
+}
+
+.summary-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+}
+
+.summary-label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* Admin Table */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.admin-table thead th {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 2px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.admin-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.admin-table tbody tr:hover {
+    background: var(--neutral-bg);
+}
+
+.row-active {
+    background: rgba(22, 163, 74, 0.03);
+}
+
+.row-closed {
+    opacity: 0.75;
+}
+
+.session-code-cell {
+    font-weight: 700;
+    font-family: monospace;
+    font-size: 1rem;
+}
+
+.text-muted {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-open {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.status-closed {
+    background: var(--neutral-bg);
+    color: var(--neutral);
+}
+
+/* Role Badges */
+.role-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.role-admin {
+    background: #dbeafe;
+    color: var(--primary);
+}
+
+.role-user {
+    background: var(--neutral-bg);
+    color: var(--neutral);
+}
+
+.you-badge {
+    display: inline-block;
+    background: var(--warning-bg);
+    color: var(--warning);
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+/* Admin Actions */
+.admin-actions {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.admin-session-list {
+    overflow-x: auto;
+}
+
+/* Placeholder button for future features */
+.admin-placeholder {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Add User Form */
+.add-user-form .form-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.form-group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-group-checkbox {
+    justify-content: flex-end;
+    padding-bottom: 4px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.form-input {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.15s;
+    min-width: 160px;
+}
+
+.form-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.form-input-small {
+    min-width: 120px;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+}
+
+/* Password Form */
+.password-form {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+}
+
+.inline-password-form {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* ============================================================
+   Responsive: Portrait tablet / smaller screens
+   ============================================================ */
+@media (max-width: 768px) {
+    .scan-content {
+        grid-template-columns: 1fr;
+    }
+
+    .header {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .header-center {
+        order: 3;
+        width: 100%;
+        justify-content: flex-start;
+        font-size: 0.8rem;
+    }
+
+    .location-banner {
+        font-size: 1.1rem;
+    }
+
+    .history-item {
+        grid-template-columns: 40px 1fr auto;
+    }
+
+    .history-location {
+        display: none;
+    }
+
+    .session-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    /* Admin responsive */
+    .admin-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .admin-table {
+        font-size: 0.8rem;
+    }
+
+    .admin-table thead th,
+    .admin-table tbody td {
+        padding: 8px 6px;
+    }
+
+    .add-user-form .form-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-input {
+        min-width: unset;
+        width: 100%;
+    }
+}
+
+/* ============================================================
+   Spot Check — Dashboard badges
+   ============================================================ */
+.session-code-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.session-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.spotcheck-badge {
+    display: inline-block;
+    background: #ede9fe;
+    color: #7c3aed;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.spotcheck-result-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.spotcheck-result-match {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.spotcheck-result-mismatch {
+    background: var(--error-bg);
+    color: var(--error);
+}
+
+.session-spotcheck {
+    border-left-color: #7c3aed;
+}
+
+.session-spotcheck-closed {
+    border-left-color: #a78bfa;
+}
+
+.session-name-banner {
+    text-align: center;
+    padding: 4px 16px;
+    background: #ede9fe;
+    color: #7c3aed;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* ============================================================
+   Spot Check — Progress Banner (scan page)
+   ============================================================ */
+.spotcheck-progress-banner {
+    padding: 8px 16px;
+    background: #ede9fe;
+    border-bottom: 2px solid #7c3aed;
+}
+
+.spotcheck-progress-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.spotcheck-progress-label {
+    font-weight: 600;
+    color: #7c3aed;
+    font-size: 0.9rem;
+}
+
+.spotcheck-progress-count {
+    font-weight: 500;
+    color: var(--text);
+    font-size: 0.9rem;
+}
+
+.spotcheck-progress-bar {
+    height: 6px;
+    background: #ddd6fe;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.spotcheck-progress-fill {
+    height: 100%;
+    background: #7c3aed;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* ============================================================
+   Spot Check — Checklist (scan sidebar)
+   ============================================================ */
+.spotcheck-checklist-card {
+    border-left: 3px solid #7c3aed;
+}
+
+.spotcheck-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.spotcheck-checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.spotcheck-checked {
+    background: var(--success-bg);
+}
+
+.spotcheck-check-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.spotcheck-check-loc {
+    font-family: monospace;
+    font-weight: 600;
+}
+
+.spotcheck-checklist-summary {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding-top: 4px;
+    border-top: 1px solid var(--border);
+}
+
+/* ============================================================
+   Spot Check — Configure Page
+   ============================================================ */
+.spotcheck-session-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 0.9rem;
+}
+
+.spotcheck-mode-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0;
+}
+
+.spotcheck-tab {
+    padding: 10px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.spotcheck-tab:hover {
+    color: var(--text);
+}
+
+.spotcheck-tab.active {
+    color: #7c3aed;
+    border-bottom-color: #7c3aed;
+}
+
+.spotcheck-mode-panel {
+    padding: 8px 0;
+}
+
+.spotcheck-select-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.spotcheck-location-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 6px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 4px;
+}
+
+.spotcheck-location-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.spotcheck-location-item:hover {
+    background: var(--neutral-bg);
+    border-color: #7c3aed;
+}
+
+.spotcheck-location-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.spotcheck-loc-name {
+    font-family: monospace;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.spotcheck-loc-stats {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-left: auto;
+}
+
+/* ============================================================
+   Spot Check — Results Page
+   ============================================================ */
+.spotcheck-result-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+}
+
+.spotcheck-match {
+    background: var(--success-bg);
+    border: 2px solid var(--success);
+}
+
+.spotcheck-mismatch {
+    background: var(--error-bg);
+    border: 2px solid var(--error);
+}
+
+.spotcheck-pending {
+    background: var(--warning-bg);
+    border: 2px solid var(--warning);
+}
+
+.spotcheck-result-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.spotcheck-result-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.spotcheck-result-text strong {
+    font-size: 1.2rem;
+}
+
+.spotcheck-result-text span {
+    font-size: 0.95rem;
+    opacity: 0.85;
+}
+
+.spotcheck-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.spotcheck-detail-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.spotcheck-detail {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.detail-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.detail-value {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.spotcheck-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.spotcheck-stat-card {
+    text-align: center;
+    padding: 12px;
+    background: var(--neutral-bg);
+    border-radius: var(--radius);
+}
+
+.spotcheck-stat-number {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.spotcheck-stat-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.spotcheck-confidence-desc {
+    padding: 12px 16px;
+    background: #f0f7ff;
+    border-radius: var(--radius);
+    border-left: 3px solid var(--primary);
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.spotcheck-detection-table {
+    margin-bottom: 12px;
+}
+
+.spotcheck-detection-table h3 {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    color: var(--text-muted);
+}
+
+.spotcheck-confidence-note {
+    padding: 10px 16px;
+    background: var(--neutral-bg);
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    margin-top: 8px;
+}
+
+.spotcheck-warning-note {
+    background: var(--warning-bg);
+    border-left: 3px solid var(--warning);
+}
+
+.spotcheck-locations-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.spotcheck-loc-badge {
+    display: inline-block;
+    background: #ede9fe;
+    color: #7c3aed;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-family: monospace;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+/* Mismatch table colors */
+.row-surplus {
+    background: rgba(245, 158, 11, 0.08);
+}
+
+.row-deficit {
+    background: rgba(220, 38, 38, 0.08);
+}
+
+.text-surplus {
+    color: var(--warning);
+    font-weight: 700;
+}
+
+.text-deficit {
+    color: var(--error);
+    font-weight: 700;
+}
+
+/* Spot check status badges */
+.status-pending {
+    background: var(--warning-bg);
+    color: var(--warning);
+}
+
+.status-in_progress {
+    background: #dbeafe;
+    color: var(--primary);
+}
+
+.status-completed {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.status-spotcheck {
+    background: #ede9fe;
+    color: #7c3aed;
+}
+
+/* Spot check dots in admin table */
+.spotcheck-dot {
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.spotcheck-dot-match {
+    color: var(--success);
+}
+
+.spotcheck-dot-mismatch {
+    color: var(--error);
+}
+
+.spotcheck-dot-pending {
+    color: var(--neutral);
+}
+
+/* Summary card for spot checks */
+.summary-spotchecks {
+    border-top-color: #7c3aed;
+}
+
+/* Admin summary 4 columns */
+.admin-summary {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* ============================================================
+   Responsive: Large landscape tablet
+   ============================================================ */
+@media (min-width: 1024px) {
+    .scan-content {
+        grid-template-columns: 1fr 380px;
+    }
+}
+
+@media (max-width: 768px) {
+    .spotcheck-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .spotcheck-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .spotcheck-location-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

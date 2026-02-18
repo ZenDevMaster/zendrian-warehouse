@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Zendrian Warehouse — Select Session for Spot Check{% endblock %}
+
+{% block body %}
+<div class="admin-panel">
+    <header class="admin-header">
+        <div class="admin-header-left">
+            <a href="{{ url_for('admin.index') }}" class="btn btn-secondary btn-small">← Back to Admin</a>
+            <h1>🔍 Create Spot Check — Step 1</h1>
+        </div>
+    </header>
+
+    <main class="admin-content">
+        <section class="card">
+            <h2>Select a Closed Session to Spot Check</h2>
+            <p class="text-muted" style="margin-bottom: 16px;">
+                Choose a completed stocktake session to verify. Only closed, normal sessions are shown.
+            </p>
+
+            {% if sessions %}
+            <div class="admin-session-list">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Owner</th>
+                            <th>Closed</th>
+                            <th>Scans</th>
+                            <th>Items</th>
+                            <th>Locations</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sess in sessions %}
+                        <tr>
+                            <td class="session-code-cell">#{{ sess.session_code }}</td>
+                            <td>{{ sess.operator.display_name }}{% if sess.owner %} <span class="text-muted">({{ sess.owner }})</span>{% endif %}</td>
+                            <td class="text-muted">{{ sess.closed_at.strftime('%Y-%m-%d %H:%M') if sess.closed_at else '—' }}</td>
+                            <td>{{ sess.total_scans }}</td>
+                            <td>{{ sess.total_items }}</td>
+                            <td>{{ sess.unique_locations }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.spotcheck_configure', session_id=sess.id) }}"
+                                   class="btn btn-primary btn-small">Select →</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>No closed sessions available for spot checking.</p>
+                <p class="text-muted">Sessions must be closed before they can be spot checked.</p>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+</div>
+{% endblock %}

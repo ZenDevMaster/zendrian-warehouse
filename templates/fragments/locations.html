@@ -1,0 +1,14 @@
+<h3>📍 Locations</h3>
+{% if locations %}
+<div class="location-list">
+    {% for loc in locations %}
+    <a href="{{ url_for('scanning.switch_location', session_id=sess.id, location=loc.location) }}"
+       class="location-item {% if loc.location == current_location %}location-current{% endif %}">
+        <span class="loc-name">{{ loc.location }}</span>
+        <span class="loc-stats">{{ loc.sku_count }} SKUs · {{ loc.total_items }} items</span>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<p class="empty-state">No locations scanned yet.</p>
+{% endif %}

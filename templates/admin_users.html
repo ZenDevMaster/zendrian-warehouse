@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Zendrian Warehouse — User Management{% endblock %}
+
+{% block body %}
+<div class="admin-panel">
+    <header class="admin-header">
+        <div class="admin-header-left">
+            <h1>👥 User Management</h1>
+        </div>
+        <div class="admin-header-right">
+            <a href="{{ url_for('admin.index') }}" class="btn btn-secondary btn-small">← Back to Admin</a>
+        </div>
+    </header>
+
+    <main class="admin-content">
+        <!-- Add User Form -->
+        <section class="card">
+            <h2>➕ Add New User</h2>
+            <form method="POST" action="{{ url_for('admin.create_user') }}" class="add-user-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required minlength="2"
+                               placeholder="e.g. john" class="form-input" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required minlength="4"
+                               placeholder="Min 4 characters" class="form-input" autocomplete="new-password">
+                    </div>
+                    <div class="form-group form-group-checkbox">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="is_admin">
+                            <span>Admin</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Create User</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- User List -->
+        <section class="card">
+            <h2>📋 All Users ({{ users | length }})</h2>
+
+            {% if users %}
+            <div class="admin-session-list">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>
+                                <strong>{{ user.username }}</strong>
+                                <span class="text-muted">({{ user.display_name }})</span>
+                                {% if user.id == current_user.id %}
+                                <span class="you-badge">you</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.is_admin %}
+                                <span class="role-badge role-admin">Admin</span>
+                                {% else %}
+                                <span class="role-badge role-user">User</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted">{{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td class="action-cell">
+                                <div class="admin-actions">
+                                    <!-- Toggle Admin -->
+                                    {% if user.id != current_user.id %}
+                                    <form method="POST" action="{{ url_for('admin.toggle_admin', user_id=user.id) }}" style="display:inline">
+                                        {% if user.is_admin %}
+                                        <button type="submit" class="btn btn-secondary btn-small" onclick="return confirm('Remove admin from {{ user.username }}?')">
+                                            ⬇ Demote
+                                        </button>
+                                        {% else %}
+                                        <button type="submit" class="btn btn-secondary btn-small" onclick="return confirm('Make {{ user.username }} an admin?')">
+                                            ⬆ Promote
+                                        </button>
+                                        {% endif %}
+                                    </form>
+                                    {% endif %}
+
+                                    <!-- Change Password Toggle -->
+                                    <button type="button" class="btn btn-secondary btn-small" onclick="togglePasswordForm({{ user.id }})">
+                                        🔑 Password
+                                    </button>
+
+                                    <!-- Delete User -->
+                                    {% if user.id != current_user.id %}
+                                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" style="display:inline">
+                                        <button type="submit" class="btn btn-danger btn-small" onclick="return confirm('Delete user {{ user.username }}? This cannot be undone!')">
+                                            🗑 Delete
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Password Change Form (hidden by default) -->
+                                <div id="pw-form-{{ user.id }}" class="password-form" style="display:none">
+                                    <form method="POST" action="{{ url_for('admin.change_password', user_id=user.id) }}" class="inline-password-form">
+                                        <input type="password" name="new_password" required minlength="4"
+                                               placeholder="New password" class="form-input form-input-small" autocomplete="new-password">
+                                        <button type="submit" class="btn btn-primary btn-small">Save</button>
+                                        <button type="button" class="btn btn-secondary btn-small" onclick="togglePasswordForm({{ user.id }})">Cancel</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>No users found.</p>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function togglePasswordForm(userId) {
+    var form = document.getElementById('pw-form-' + userId);
+    if (form.style.display === 'none') {
+        // Hide all other open password forms first
+        document.querySelectorAll('.password-form').forEach(function(f) {
+            f.style.display = 'none';
+        });
+        form.style.display = 'block';
+        form.querySelector('input[name="new_password"]').focus();
+    } else {
+        form.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

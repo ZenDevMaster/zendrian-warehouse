@@ -1,0 +1,55 @@
+# ============================================================
+# Zendrian Warehouse — Docker Build Context Exclusions
+# ============================================================
+
+# Version control
+.git
+.gitignore
+
+# Python artifacts
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.coverage
+htmlcov
+
+# Virtual environments
+venv
+.venv
+env
+.env
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Instance data (database) — must not be baked into image
+instance
+
+# Docker files (avoid recursive context)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Documentation and plans
+*.md
+plans
+LICENSE
+
+# Distribution / packaging
+dist
+build
+*.egg-info
+*.egg
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Nginx config (mounted separately)
+nginx

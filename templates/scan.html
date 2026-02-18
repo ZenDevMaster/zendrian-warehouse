@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}Zendrian Warehouse — Session #{{ sess.session_code }}{% endblock %}
+
+{% block body %}
+<div class="scan-page">
+    <!-- Header bar -->
+    <header class="header" id="header">
+        <div class="header-left">
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-small">← Back</a>
+            <span class="session-badge">Session #{{ sess.session_code }}</span>
+            {% if sess.session_type == 'spotcheck' %}
+            <span class="spotcheck-badge">🔍 Spot Check</span>
+            {% endif %}
+        </div>
+        <div class="header-center" id="stats-bar">
+            {% include "fragments/stats.html" %}
+        </div>
+        <div class="header-right">
+            <span class="user-badge">{{ user.display_name }}</span>
+        </div>
+    </header>
+
+    {% if sess.name %}
+    <div class="session-name-banner">{{ sess.name }}</div>
+    {% endif %}
+
+    <!-- Spot Check Progress Banner -->
+    {% if spotcheck_progress %}
+    <div class="spotcheck-progress-banner" id="spotcheck-progress">
+        <div class="spotcheck-progress-info">
+            <span class="spotcheck-progress-label">🔍 Spot Check Progress:</span>
+            <span class="spotcheck-progress-count">{{ spotcheck_progress.done }} of {{ spotcheck_progress.total }} locations checked</span>
+        </div>
+        <div class="spotcheck-progress-bar">
+            <div class="spotcheck-progress-fill" style="width: {{ (spotcheck_progress.done / spotcheck_progress.total * 100) if spotcheck_progress.total > 0 else 0 }}%"></div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Location banner -->
+    <div class="location-banner {% if current_location %}location-active{% else %}location-empty{% endif %}" id="location-banner">
+        {% if current_location %}
+            <span class="location-icon">📍</span>
+            <span class="location-name">{{ current_location }}</span>
+        {% else %}
+            <span class="location-icon">⚠️</span>
+            <span class="location-name">No location set — scan a location barcode</span>
+        {% endif %}
+    </div>
+
+    <!-- Mode indicator -->
+    {% if mode != 'add' %}
+    <div class="mode-banner mode-{{ mode }}" id="mode-banner">
+        {% if mode == 'subtract' %}
+            ➖ SUBTRACT MODE — next scan will subtract 1
+        {% elif mode == 'bulk' %}
+            📦 BULK MODE — next scan adds multiple
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Hidden barcode input -->
+    <div class="scan-input-wrapper">
+        <form hx-post="{{ url_for('scanning.process_scan', session_id=sess.id) }}"
+              hx-target="#feedback-area"
+              hx-swap="innerHTML"
+              id="scan-form">
+            <input type="text"
+                   id="scan-input"
+                   name="scan_input"
+                   autocomplete="off"
+                   autocapitalize="off"
+                   autocorrect="off"
+                   spellcheck="false"
+                   class="scan-input-field"
+                   placeholder="Scanner ready — waiting for input..."
+                   autofocus>
+        </form>
+    </div>
+
+    <!-- Focus lost overlay -->
+    <div class="focus-overlay" id="focus-overlay" style="display:none" onclick="refocusInput()">
+        <div class="focus-overlay-content">
+            <span class="focus-icon">🔍</span>
+            <span>Tap here to re-enable scanner</span>
+        </div>
+    </div>
+
+    <!-- Main content area -->
+    <div class="scan-content">
+        <!-- Left: Feedback + Inventory -->
+        <div class="scan-main">
+            <!-- Feedback area -->
+            <div id="feedback-area">
+                {% include "fragments/feedback.html" %}
+            </div>
+
+            <!-- Inventory table for current location -->
+            <div id="inventory-area">
+                {% include "fragments/inventory.html" %}
+            </div>
+        </div>
+
+        <!-- Right: Sidebar -->
+        <div class="scan-sidebar">
+            <!-- Spot Check Locations Checklist -->
+            {% if spotcheck_progress %}
+            <div class="card sidebar-card spotcheck-checklist-card" id="spotcheck-checklist">
+                <h3>🔍 Locations to Check</h3>
+                <div class="spotcheck-checklist">
+                    {% for loc in spotcheck_progress.selected %}
+                    <div class="spotcheck-checklist-item {% if loc in spotcheck_progress.scanned %}spotcheck-checked{% endif %}">
+                        <span class="spotcheck-check-icon">
+                            {% if loc in spotcheck_progress.scanned %}✅{% else %}⬜{% endif %}
+                        </span>
+                        <span class="spotcheck-check-loc">{{ loc }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="spotcheck-checklist-summary">
+                    {{ spotcheck_progress.done }}/{{ spotcheck_progress.total }} complete
+                    {% if spotcheck_progress.done == spotcheck_progress.total %}
+                    — <strong>All done! Close session to see results.</strong>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Bulk quantity form -->
+            <div class="card sidebar-card" id="bulk-form" style="display:none">
+                <h3>📦 Bulk Quantity</h3>
+                <form hx-post="{{ url_for('scanning.set_bulk_quantity', session_id=sess.id) }}"
+                      hx-target="#feedback-area"
+                      hx-swap="innerHTML">
+                    <input type="number" name="bulk_qty" min="1" value="1" class="bulk-input" id="bulk-qty-input">
+                    <button type="submit" class="btn btn-primary">Set Quantity</button>
+                    <button type="button" class="btn btn-secondary" onclick="cancelBulk()">Cancel</button>
+                </form>
+            </div>
+
+            <!-- Recent scans -->
+            <div class="card sidebar-card" id="history-area">
+                {% include "fragments/history.html" %}
+            </div>
+
+            <!-- Locations list -->
+            <div class="card sidebar-card" id="locations-area">
+                {% include "fragments/locations.html" %}
+            </div>
+
+            <!-- Session actions -->
+            <div class="card sidebar-card">
+                <h3>Session Actions</h3>
+                <div class="action-buttons">
+                    <a href="{{ url_for('scanning.export_summary', session_id=sess.id) }}" class="btn btn-secondary btn-block">
+                        📥 Export Summary CSV
+                    </a>
+                    <a href="{{ url_for('scanning.export_log', session_id=sess.id) }}" class="btn btn-secondary btn-block">
+                        📥 Export Full Log
+                    </a>
+                    <form method="POST" action="{{ url_for('dashboard.close_session', session_id=sess.id) }}">
+                        <button type="submit" class="btn btn-danger btn-block" onclick="return confirm('Close this session?')">
+                            ⏹ Close Session
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/scanner.js') }}"></script>
+<script>
+    // Initialise scanner input management
+    initScanner('scan-input', 'focus-overlay', 'scan-form');
+</script>
+{% endblock %}

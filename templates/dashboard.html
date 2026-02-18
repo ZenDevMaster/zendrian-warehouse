@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Zendrian Warehouse — Dashboard{% endblock %}
+
+{% block body %}
+<div class="dashboard">
+    <header class="header">
+        <h1>📦 Zendrian Warehouse</h1>
+        <span class="user-badge">{{ user.display_name }}</span>
+    </header>
+
+    <main class="dashboard-content">
+        <!-- Create new session -->
+        <section class="card">
+            <h2>Start New Session</h2>
+            <form method="POST" action="{{ url_for('dashboard.create_session') }}">
+                <button type="submit" class="btn btn-primary btn-large">
+                    ➕ New Scanning Session
+                </button>
+            </form>
+        </section>
+
+        <!-- Open sessions -->
+        {% if open_sessions %}
+        <section class="card">
+            <h2>🟢 Open Sessions</h2>
+            <div class="session-list">
+                {% for sess in open_sessions %}
+                <div class="session-card {% if sess.session_type == 'spotcheck' %}session-spotcheck{% else %}session-open{% endif %}">
+                    <div class="session-info">
+                        <div class="session-code-row">
+                            <span class="session-code">#{{ sess.session_code }}</span>
+                            {% if sess.session_type == 'spotcheck' %}
+                            <span class="spotcheck-badge">🔍 Spot Check</span>
+                            {% endif %}
+                        </div>
+                        {% if sess.name %}
+                        <span class="session-name">{{ sess.name }}</span>
+                        {% endif %}
+                        <span class="session-operator">{{ sess.operator.display_name }}{% if sess.owner %} ({{ sess.owner }}){% endif %}</span>
+                        <span class="session-stats">
+                            {{ sess.total_scans }} scans · {{ sess.unique_locations }} locations · {{ sess.total_items }} items
+                        </span>
+                        <span class="session-time">Started {{ sess.started_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                    <div class="session-actions">
+                        <a href="{{ url_for('scanning.scan_view', session_id=sess.id) }}" class="btn btn-primary">
+                            ▶ {% if sess.session_type == 'spotcheck' %}Begin Spot Check{% else %}Resume{% endif %}
+                        </a>
+                        <form method="POST" action="{{ url_for('dashboard.close_session', session_id=sess.id) }}" style="display:inline">
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Close this session?')">
+                                ⏹ Close
+                            </button>
+                        </form>
+                        <a href="{{ url_for('scanning.export_summary', session_id=sess.id) }}" class="btn btn-secondary">
+                            📥 CSV
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Closed sessions -->
+        {% set closed = all_sessions | selectattr('is_open', 'false') | list %}
+        {% if closed %}
+        <section class="card">
+            <h2>📁 Closed Sessions</h2>
+            <div class="session-list">
+                {% for sess in closed %}
+                <div class="session-card {% if sess.session_type == 'spotcheck' %}session-spotcheck-closed{% else %}session-closed{% endif %}">
+                    <div class="session-info">
+                        <div class="session-code-row">
+                            <span class="session-code">#{{ sess.session_code }}</span>
+                            {% if sess.session_type == 'spotcheck' %}
+                            <span class="spotcheck-badge">🔍 Spot Check</span>
+                            {% if sess.id in spotcheck_map %}
+                                {% set sc = spotcheck_map[sess.id] %}
+                                {% if sc.result == 'match' %}
+                                <span class="spotcheck-result-badge spotcheck-result-match">✅ Match</span>
+                                {% elif sc.result == 'mismatch' %}
+                                <span class="spotcheck-result-badge spotcheck-result-mismatch">❌ Mismatch</span>
+                                {% endif %}
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                        {% if sess.name %}
+                        <span class="session-name">{{ sess.name }}</span>
+                        {% endif %}
+                        <span class="session-operator">{{ sess.operator.display_name }}{% if sess.owner %} ({{ sess.owner }}){% endif %}</span>
+                        <span class="session-stats">
+                            {{ sess.total_scans }} scans · {{ sess.unique_locations }} locations · {{ sess.total_items }} items
+                        </span>
+                        <span class="session-time">
+                            {{ sess.started_at.strftime('%Y-%m-%d %H:%M') }}
+                            → {{ sess.closed_at.strftime('%H:%M') if sess.closed_at else '?' }}
+                        </span>
+                    </div>
+                    <div class="session-actions">
+                        <a href="{{ url_for('scanning.export_summary', session_id=sess.id) }}" class="btn btn-secondary">
+                            📥 Summary CSV
+                        </a>
+                        <a href="{{ url_for('scanning.export_log', session_id=sess.id) }}" class="btn btn-secondary">
+                            📥 Full Log
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}

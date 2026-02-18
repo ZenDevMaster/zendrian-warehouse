@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>{% block title %}Zendrian Warehouse{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <style>
+        /* --- Nav Bar --- */
+        .nav-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 16px;
+            background: #1e293b;
+            color: #f1f5f9;
+            font-size: 0.85rem;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-brand {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link {
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .nav-link:hover {
+            background: #334155;
+            color: #fff;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #94a3b8;
+        }
+
+        .nav-username {
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .nav-role {
+            background: #2563eb;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .nav-logout {
+            color: #f87171;
+            text-decoration: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            transition: background 0.15s;
+        }
+
+        .nav-logout:hover {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+    </style>
+</head>
+<body>
+    {% if current_user.is_authenticated %}
+    <nav class="nav-bar">
+        <div class="nav-left">
+            <a href="{{ url_for('dashboard.index') }}" class="nav-brand">📦 Zendrian Warehouse</a>
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard.index') }}" class="nav-link">Dashboard</a>
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin.index') }}" class="nav-link">Admin Panel</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="nav-user">
+                <span class="nav-username">{{ current_user.display_name }}</span>
+                {% if current_user.is_admin %}
+                <span class="nav-role">Admin</span>
+                {% endif %}
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="nav-logout">Logout</a>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="flash-msg flash-{{ category }}">
+            {% if category == 'success' %}✅{% elif category == 'error' %}❌{% else %}ℹ️{% endif %}
+            {{ message }}
+            <button type="button" class="flash-close" onclick="this.parentElement.remove()">×</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    {% block body %}{% endblock %}
+
+    <!-- Audio system -->
+    <script src="{{ url_for('static', filename='js/audio.js') }}"></script>
+
+    <!-- HTMX sound trigger: read X-Play-Sound header after every swap -->
+    <script>
+        document.addEventListener('htmx:afterRequest', function(evt) {
+            var sound = evt.detail.xhr.getResponseHeader('X-Play-Sound');
+            if (sound) {
+                playSound(sound);
+            }
+        });
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

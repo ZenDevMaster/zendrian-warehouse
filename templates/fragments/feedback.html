@@ -1,0 +1,17 @@
+{% if result is defined and result %}
+<div class="feedback-toast {% if result.success %}feedback-success{% else %}feedback-error{% endif %}" id="feedback-toast">
+    <span class="feedback-icon">{% if result.success %}✅{% else %}❌{% endif %}</span>
+    <span class="feedback-message">{{ result.message }}</span>
+    {% if result.sku %}
+    <span class="feedback-detail">
+        {{ result.location }} / {{ result.sku }}
+        {% if result.running_total is not none %} → Qty: {{ result.running_total }}{% endif %}
+    </span>
+    {% endif %}
+</div>
+{% else %}
+<div class="feedback-toast feedback-idle" id="feedback-toast">
+    <span class="feedback-icon">📡</span>
+    <span class="feedback-message">Ready to scan</span>
+</div>
+{% endif %}

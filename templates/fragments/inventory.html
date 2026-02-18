@@ -1,0 +1,46 @@
+{% if current_location and inventory %}
+<div class="card">
+    <h3>📋 Inventory at {{ current_location }} <span class="item-count">({{ inventory | length }} SKUs)</span></h3>
+    <table class="inventory-table">
+        <thead>
+            <tr>
+                <th>SKU</th>
+                <th>Qty</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in inventory %}
+            <tr>
+                <td class="sku-cell">{{ item.sku }}</td>
+                <td class="qty-cell">
+                    <span class="qty-display">{{ item.quantity }}</span>
+                </td>
+                <td class="action-cell">
+                    <form hx-post="{{ url_for('scanning.adjust_quantity', session_id=sess.id) }}"
+                          hx-target="#feedback-area"
+                          hx-swap="innerHTML"
+                          class="inline-adjust">
+                        <input type="hidden" name="location" value="{{ item.location }}">
+                        <input type="hidden" name="sku" value="{{ item.sku }}">
+                        <input type="number" name="new_qty" value="{{ item.quantity }}"
+                               min="0" class="qty-input">
+                        <button type="submit" class="btn btn-small btn-primary">Set</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% elif current_location %}
+<div class="card">
+    <h3>📋 Inventory at {{ current_location }}</h3>
+    <p class="empty-state">No items scanned at this location yet.</p>
+</div>
+{% else %}
+<div class="card">
+    <h3>📋 Inventory</h3>
+    <p class="empty-state">Scan a location barcode to begin.</p>
+</div>
+{% endif %}
