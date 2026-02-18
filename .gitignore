@@ -41,3 +41,6 @@ build/
 .coverage
 htmlcov/
 plans/
+
+# Node.js (puppeteer for screenshots)
+node_modules/
