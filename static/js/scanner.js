@@ -58,16 +58,25 @@ function initScanner(inputId, overlayElId, formElId) {
         }
     });
 
-    // After HTMX swap, clear input and re-focus
+    // After HTMX swap, clear input and re-focus (skip focus when camera active)
     document.addEventListener('htmx:afterSwap', function () {
         setTimeout(function () {
             const inp = document.getElementById(scanInputId);
             if (inp) {
                 inp.value = '';
-                inp.focus();
+                // Skip focus when camera scanner is active to prevent
+                // the browser from scrolling away from the viewfinder
+                if (!window._cameraScannerActive) {
+                    inp.focus();
+                }
             }
             const ov = document.getElementById(overlayId);
             if (ov) ov.style.display = 'none';
+
+            // Show floating toast when camera scanner is active
+            if (window._cameraScannerActive && typeof window._showCameraScanToast === 'function') {
+                window._showCameraScanToast();
+            }
         }, 50);
     });
 
@@ -101,6 +110,10 @@ function initScanner(inputId, overlayElId, formElId) {
                 // Only restore if camera scanner isn't active
                 if (!window._cameraScannerActive) {
                     input.setAttribute('inputmode', 'text');
+                    // Blur then re-focus so the mobile browser
+                    // re-evaluates inputmode and shows the keyboard
+                    input.blur();
+                    setTimeout(function() { input.focus(); }, 50);
                 }
             }
         });
@@ -112,10 +125,10 @@ window.setScanInputMode = function(mode) {
     var input = document.getElementById('scan-input');
     if (!input) return;
     input.setAttribute('inputmode', mode);
-    if (mode === 'none') {
-        input.blur();
-        setTimeout(function() { input.focus(); }, 50);
-    }
+    // Always blur then re-focus so the mobile browser
+    // re-evaluates inputmode (shows or hides the keyboard)
+    input.blur();
+    setTimeout(function() { input.focus(); }, 50);
 };
 
 function refocusInput() {

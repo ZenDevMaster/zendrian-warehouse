@@ -63,7 +63,7 @@
     <div class="scan-input-wrapper">
         <form hx-post="{{ url_for('scanning.process_scan', session_id=sess.id) }}"
               hx-target="#feedback-area"
-              hx-swap="innerHTML"
+              hx-swap="innerHTML scroll:none"
               id="scan-form">
             <input type="text"
                    id="scan-input"

@@ -416,15 +416,8 @@
         // Visual flash on viewfinder
         flashViewfinder();
 
-        // After detection, ensure camera stays visible on mobile
-        if (isMobileView()) {
-            setTimeout(function () {
-                var mount = document.getElementById('mobile-camera-mount');
-                if (mount && mount.children.length > 0) {
-                    mount.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }, 300);
-        }
+        // No scrollIntoView — the toast overlay handles feedback
+        // without disrupting the camera viewfinder position
     }
 
     function flashViewfinder() {
@@ -450,6 +443,59 @@
         if (el) el.style.display = 'none';
         if (videoEl) videoEl.style.display = '';
     }
+
+    // ── Floating toast for camera-scan feedback ────────────────
+    var toastEl = null;
+    var toastTimer = null;
+    var TOAST_DURATION = 3000; // ms
+
+    function ensureToastEl() {
+        if (toastEl) return toastEl;
+        toastEl = document.createElement('div');
+        toastEl.className = 'camera-scan-toast';
+        toastEl.style.display = 'none';
+        document.body.appendChild(toastEl);
+        return toastEl;
+    }
+
+    window._showCameraScanToast = function () {
+        var feedback = document.getElementById('feedback-toast');
+        if (!feedback) return;
+
+        var el = ensureToastEl();
+
+        // Clone the feedback content into the toast
+        var icon = feedback.querySelector('.feedback-icon');
+        var msg = feedback.querySelector('.feedback-message');
+        var detail = feedback.querySelector('.feedback-detail');
+
+        var isSuccess = feedback.classList.contains('feedback-success');
+        var isError = feedback.classList.contains('feedback-error');
+
+        el.className = 'camera-scan-toast' +
+            (isSuccess ? ' toast-success' : '') +
+            (isError ? ' toast-error' : '');
+
+        el.innerHTML = '';
+        if (icon) el.appendChild(icon.cloneNode(true));
+        if (msg) el.appendChild(msg.cloneNode(true));
+        if (detail) el.appendChild(detail.cloneNode(true));
+
+        // Show with animation
+        el.style.display = 'flex';
+        el.classList.remove('toast-hide');
+        el.classList.add('toast-show');
+
+        // Auto-hide after duration
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+            el.classList.remove('toast-show');
+            el.classList.add('toast-hide');
+            setTimeout(function () {
+                el.style.display = 'none';
+            }, 300);
+        }, TOAST_DURATION);
+    };
 
     // ── Cleanup on page unload ─────────────────────────────────
     window.addEventListener('beforeunload', function () {

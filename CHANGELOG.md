@@ -1,4 +1,18 @@
 
+1.2.1 Fix: Hide KB reactivation & camera scan toast
+
+Fixed:
+- "Hide KB" toggle now properly reactivates the virtual keyboard when turned off — previously, changing `inputmode` back to `text` without a blur→focus cycle meant mobile browsers never re-showed the keyboard
+- `setScanInputMode()` now always performs a blur→focus cycle for both `'none'` and `'text'` modes so the keyboard state updates reliably
+- Camera barcode scanner no longer scrolls the page to the feedback area after each scan — removed `scrollIntoView()` call and added `scroll:none` to the HTMX swap, plus suppressed `input.focus()` when camera is active
+- Added floating toast notification that appears at the top of the screen when camera scanner is active, showing scan results without disrupting the camera viewfinder position
+
+Files changed:
+- `static/js/scanner.js` — blur→focus cycle on keyboard restore; skip `input.focus()` in `htmx:afterSwap` when camera active; trigger toast callback
+- `static/js/camera-scanner.js` — removed `scrollIntoView()` after detection; added `_showCameraScanToast()` floating toast system
+- `templates/scan.html` — added `scroll:none` to `hx-swap` attribute on scan form
+- `static/css/style.css` — added `.camera-scan-toast` styles with slide-in/out animations
+
 1.2.0 Mobile UX Improvements
 
 Added:
