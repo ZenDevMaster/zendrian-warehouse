@@ -341,6 +341,11 @@
         var form  = document.getElementById('scan-form');
         if (input && form) {
             input.value = value;
+
+            // Mark that camera scanner will handle the sound for this scan,
+            // so the global htmx:afterRequest handler skips the duplicate beep.
+            window._cameraScanSoundPlayed = true;
+
             htmx.trigger(form, 'submit');
         }
 
@@ -349,7 +354,7 @@
             navigator.vibrate(100);
         }
 
-        // Audio feedback
+        // Audio feedback (instant — server response sound is suppressed)
         if (typeof playSound === 'function') {
             playSound('bleep');
         }

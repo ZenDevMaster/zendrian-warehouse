@@ -142,6 +142,12 @@
         document.addEventListener('htmx:afterRequest', function(evt) {
             var sound = evt.detail.xhr.getResponseHeader('X-Play-Sound');
             if (sound) {
+                // If the camera scanner already played an instant beep for this
+                // scan, skip the duplicate sound from the server response.
+                if (window._cameraScanSoundPlayed) {
+                    window._cameraScanSoundPlayed = false;
+                    return;
+                }
                 playSound(sound);
             }
         });

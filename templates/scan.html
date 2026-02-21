@@ -195,19 +195,70 @@
             error: null
         };
 
-        // Show a temporary diagnostic banner on the page (visible for 15s)
-        function showDiagBanner(msg, isError) {
-            var banner = document.createElement('div');
-            banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9999;padding:10px 16px;font-family:monospace;font-size:12px;white-space:pre-wrap;max-height:40vh;overflow-y:auto;' +
-                (isError ? 'background:#ffebee;color:#b71c1c;border-top:3px solid #f44336;' : 'background:#e8f5e9;color:#1b5e20;border-top:3px solid #4caf50;');
-            banner.textContent = msg;
+        // Store diagnostic message for the π modal
+        var diagMessage = '';
+        var diagIsError = false;
+
+        function setDiagMessage(msg, isError) {
+            diagMessage = msg;
+            diagIsError = isError;
+        }
+
+        // Create the π button and modal (hidden until tapped)
+        function createDiagUI() {
+            // π button — small fixed button at bottom-right
+            var piBtn = document.createElement('button');
+            piBtn.textContent = 'π';
+            piBtn.title = 'Camera Scanner Diagnostics';
+            piBtn.style.cssText = 'position:fixed;bottom:8px;right:8px;z-index:9998;width:32px;height:32px;' +
+                'border-radius:50%;border:1px solid #ccc;background:#f5f5f5;color:#666;font-size:16px;' +
+                'cursor:pointer;opacity:0.5;transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;' +
+                'font-family:serif;line-height:1;padding:0;';
+            piBtn.onmouseenter = function() { piBtn.style.opacity = '1'; };
+            piBtn.onmouseleave = function() { piBtn.style.opacity = '0.5'; };
+
+            // Modal backdrop
+            var backdrop = document.createElement('div');
+            backdrop.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;' +
+                'background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;padding:16px;';
+
+            // Modal content
+            var modal = document.createElement('div');
+            modal.style.cssText = 'background:#fff;border-radius:8px;padding:16px 20px;max-width:500px;width:100%;' +
+                'max-height:80vh;overflow-y:auto;font-family:monospace;font-size:12px;white-space:pre-wrap;' +
+                'box-shadow:0 8px 32px rgba(0,0,0,0.3);position:relative;';
+
+            var modalTitle = document.createElement('div');
+            modalTitle.style.cssText = 'font-family:sans-serif;font-size:14px;font-weight:bold;margin-bottom:12px;' +
+                'padding-bottom:8px;border-bottom:1px solid #eee;';
+            modalTitle.textContent = '🔧 Camera Scanner Diagnostics';
+
+            var modalBody = document.createElement('div');
+            modalBody.id = 'diag-modal-body';
+
             var closeBtn = document.createElement('button');
-            closeBtn.textContent = '✕ Close';
-            closeBtn.style.cssText = 'position:absolute;top:4px;right:8px;background:none;border:1px solid;padding:2px 8px;cursor:pointer;font-size:11px;';
-            closeBtn.onclick = function() { banner.remove(); };
-            banner.appendChild(closeBtn);
-            document.body.appendChild(banner);
-            setTimeout(function() { if (banner.parentNode) banner.remove(); }, 30000);
+            closeBtn.textContent = '✕';
+            closeBtn.style.cssText = 'position:absolute;top:8px;right:12px;background:none;border:none;' +
+                'font-size:18px;cursor:pointer;color:#666;padding:4px;';
+            closeBtn.onclick = function() { backdrop.style.display = 'none'; };
+
+            modal.appendChild(closeBtn);
+            modal.appendChild(modalTitle);
+            modal.appendChild(modalBody);
+            backdrop.appendChild(modal);
+            backdrop.onclick = function(e) { if (e.target === backdrop) backdrop.style.display = 'none'; };
+
+            piBtn.onclick = function() {
+                var body = document.getElementById('diag-modal-body');
+                if (body) {
+                    body.textContent = diagMessage || 'No diagnostic data yet.';
+                    body.style.color = diagIsError ? '#b71c1c' : '#1b5e20';
+                }
+                backdrop.style.display = 'flex';
+            };
+
+            document.body.appendChild(piBtn);
+            document.body.appendChild(backdrop);
         }
 
         // Send diagnostics to server
@@ -221,6 +272,9 @@
             } catch(e) {}
         }
 
+        // Create the π UI immediately
+        createDiagUI();
+
         console.log('[camera-scanner] Diagnostics:', JSON.stringify(diag, null, 2));
 
         if (diag.barcodeDetector) {
@@ -229,14 +283,13 @@
                 diag.supportedFormats = formats;
                 console.log('[camera-scanner] Supported formats:', formats);
 
-                var diagMsg = '[Camera Scanner Diag]\n' +
-                    'BarcodeDetector: YES\n' +
+                var msg = 'BarcodeDetector: ✅ Available\n' +
                     'Secure context: ' + diag.secureContext + '\n' +
                     'Supported formats: ' + (formats.length > 0 ? formats.join(', ') : 'NONE') + '\n' +
                     'Toggle area: ' + diag.toggleArea + '\n' +
                     'Preview area: ' + diag.previewArea + '\n' +
                     'UA: ' + diag.userAgent;
-                showDiagBanner(diagMsg, formats.length === 0);
+                setDiagMessage(msg, formats.length === 0);
                 sendDiag();
 
                 if (formats.length === 0) return;
@@ -250,15 +303,17 @@
                 };
                 s.onerror = function(e) {
                     diag.error = 'script_load_failed';
+                    setDiagMessage(msg + '\n\n❌ ERROR: Failed to load camera-scanner.js', true);
                     sendDiag();
-                    showDiagBanner('[Camera Scanner] ERROR: Failed to load camera-scanner.js', true);
                 };
                 document.head.appendChild(s);
             }).catch(function(err) {
                 diag.error = 'getSupportedFormats_failed: ' + err.message;
                 console.warn('[camera-scanner] getSupportedFormats failed:', err);
+                setDiagMessage('BarcodeDetector: ✅ Available\n' +
+                    'getSupportedFormats(): ❌ Failed — ' + err.message + '\n' +
+                    'Trying fallback...', true);
                 sendDiag();
-                showDiagBanner('[Camera Scanner] getSupportedFormats() failed: ' + err.message + '\nTrying fallback...', true);
 
                 // Fallback: try loading anyway
                 var s = document.createElement('script');
@@ -271,14 +326,13 @@
                 document.head.appendChild(s);
             });
         } else {
-            var diagMsg = '[Camera Scanner Diag]\n' +
-                'BarcodeDetector: NO (not available)\n' +
+            var msg = 'BarcodeDetector: ❌ Not available\n' +
                 'Secure context: ' + diag.secureContext + '\n' +
                 'Protocol: ' + diag.protocol + '\n' +
                 'UA: ' + diag.userAgent + '\n\n' +
                 'BarcodeDetector requires Chrome Android 83+ over HTTPS.\n' +
                 'Desktop Chrome does NOT support BarcodeDetector.';
-            showDiagBanner(diagMsg, true);
+            setDiagMessage(msg, true);
             sendDiag();
         }
     })();

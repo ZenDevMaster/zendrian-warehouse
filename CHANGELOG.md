@@ -1,4 +1,15 @@
 
+1.1.1 Fix: Double beep on camera barcode scan
+
+- Fixed duplicate audio feedback when scanning barcodes via the camera scanner
+- Root cause: `playSound('bleep')` was called immediately in `camera-scanner.js` on detection, then called again when the HTMX server response returned with the `X-Play-Sound` header
+- Fix: Camera scanner now sets `window._cameraScanSoundPlayed = true` before triggering the HTMX submission; the global `htmx:afterRequest` handler in `base.html` checks this flag and skips the duplicate sound
+- The instant client-side beep is preserved for responsive feedback; only the redundant server-response beep is suppressed
+
+Files changed:
+- `static/js/camera-scanner.js` (modified — added `_cameraScanSoundPlayed` flag in `handleDetection()`)
+- `templates/base.html` (modified — added flag check in `htmx:afterRequest` sound handler)
+
 1.1.0 Camera-Based Barcode Scanning (BarcodeDetector API)
 
 - Added camera-based barcode scanning as a progressive enhancement for Chrome on Android devices
