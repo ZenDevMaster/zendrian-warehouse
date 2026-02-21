@@ -182,29 +182,105 @@
     initScanner('scan-input', 'focus-overlay', 'scan-form');
 </script>
 <script>
-    // Camera barcode scanner — only load on supported browsers (Chrome Android)
-    console.log('[camera-scanner] Secure context:', window.isSecureContext);
-    console.log('[camera-scanner] BarcodeDetector available:', 'BarcodeDetector' in window);
-    console.log('[camera-scanner] Protocol:', location.protocol);
-    console.log('[camera-scanner] #camera-toggle-area exists:', !!document.getElementById('camera-toggle-area'));
-    console.log('[camera-scanner] #camera-preview-area exists:', !!document.getElementById('camera-preview-area'));
-    if ('BarcodeDetector' in window) {
-        console.log('[camera-scanner] Loading camera-scanner.js...');
-        var s = document.createElement('script');
-        s.src = "{{ url_for('static', filename='js/camera-scanner.js') }}";
-        s.onload = function() {
-            console.log('[camera-scanner] Script loaded, calling initCameraScanner()');
-            initCameraScanner();
+    // Camera barcode scanner — diagnostics + conditional loading
+    (function() {
+        var diag = {
+            userAgent: navigator.userAgent,
+            secureContext: window.isSecureContext,
+            protocol: location.protocol,
+            barcodeDetector: 'BarcodeDetector' in window,
+            toggleArea: !!document.getElementById('camera-toggle-area'),
+            previewArea: !!document.getElementById('camera-preview-area'),
+            supportedFormats: null,
+            error: null
         };
-        s.onerror = function(e) {
-            console.error('[camera-scanner] Failed to load camera-scanner.js:', e);
-        };
-        document.head.appendChild(s);
-    } else {
-        console.log('[camera-scanner] BarcodeDetector NOT available. Likely causes:');
-        console.log('  1. Not a secure context (need HTTPS or localhost) — isSecureContext:', window.isSecureContext);
-        console.log('  2. Not Chrome Android (desktop Chrome does NOT support BarcodeDetector)');
-        console.log('  3. Chrome version < 83');
-    }
+
+        // Show a temporary diagnostic banner on the page (visible for 15s)
+        function showDiagBanner(msg, isError) {
+            var banner = document.createElement('div');
+            banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9999;padding:10px 16px;font-family:monospace;font-size:12px;white-space:pre-wrap;max-height:40vh;overflow-y:auto;' +
+                (isError ? 'background:#ffebee;color:#b71c1c;border-top:3px solid #f44336;' : 'background:#e8f5e9;color:#1b5e20;border-top:3px solid #4caf50;');
+            banner.textContent = msg;
+            var closeBtn = document.createElement('button');
+            closeBtn.textContent = '✕ Close';
+            closeBtn.style.cssText = 'position:absolute;top:4px;right:8px;background:none;border:1px solid;padding:2px 8px;cursor:pointer;font-size:11px;';
+            closeBtn.onclick = function() { banner.remove(); };
+            banner.appendChild(closeBtn);
+            document.body.appendChild(banner);
+            setTimeout(function() { if (banner.parentNode) banner.remove(); }, 30000);
+        }
+
+        // Send diagnostics to server
+        function sendDiag() {
+            try {
+                fetch("{{ url_for('scanning.camera_diagnostic') }}", {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(diag)
+                });
+            } catch(e) {}
+        }
+
+        console.log('[camera-scanner] Diagnostics:', JSON.stringify(diag, null, 2));
+
+        if (diag.barcodeDetector) {
+            // Try to get supported formats before loading the script
+            BarcodeDetector.getSupportedFormats().then(function(formats) {
+                diag.supportedFormats = formats;
+                console.log('[camera-scanner] Supported formats:', formats);
+
+                var diagMsg = '[Camera Scanner Diag]\n' +
+                    'BarcodeDetector: YES\n' +
+                    'Secure context: ' + diag.secureContext + '\n' +
+                    'Supported formats: ' + (formats.length > 0 ? formats.join(', ') : 'NONE') + '\n' +
+                    'Toggle area: ' + diag.toggleArea + '\n' +
+                    'Preview area: ' + diag.previewArea + '\n' +
+                    'UA: ' + diag.userAgent;
+                showDiagBanner(diagMsg, formats.length === 0);
+                sendDiag();
+
+                if (formats.length === 0) return;
+
+                // Load camera-scanner.js
+                var s = document.createElement('script');
+                s.src = "{{ url_for('static', filename='js/camera-scanner.js') }}";
+                s.onload = function() {
+                    console.log('[camera-scanner] Script loaded, calling initCameraScanner()');
+                    initCameraScanner();
+                };
+                s.onerror = function(e) {
+                    diag.error = 'script_load_failed';
+                    sendDiag();
+                    showDiagBanner('[Camera Scanner] ERROR: Failed to load camera-scanner.js', true);
+                };
+                document.head.appendChild(s);
+            }).catch(function(err) {
+                diag.error = 'getSupportedFormats_failed: ' + err.message;
+                console.warn('[camera-scanner] getSupportedFormats failed:', err);
+                sendDiag();
+                showDiagBanner('[Camera Scanner] getSupportedFormats() failed: ' + err.message + '\nTrying fallback...', true);
+
+                // Fallback: try loading anyway
+                var s = document.createElement('script');
+                s.src = "{{ url_for('static', filename='js/camera-scanner.js') }}";
+                s.onload = function() { initCameraScanner(); };
+                s.onerror = function() {
+                    diag.error = 'script_load_failed_after_fallback';
+                    sendDiag();
+                };
+                document.head.appendChild(s);
+            });
+        } else {
+            var diagMsg = '[Camera Scanner Diag]\n' +
+                'BarcodeDetector: NO (not available)\n' +
+                'Secure context: ' + diag.secureContext + '\n' +
+                'Protocol: ' + diag.protocol + '\n' +
+                'UA: ' + diag.userAgent + '\n\n' +
+                'BarcodeDetector requires Chrome Android 83+ over HTTPS.\n' +
+                'Desktop Chrome does NOT support BarcodeDetector.';
+            showDiagBanner(diagMsg, true);
+            sendDiag();
+        }
+    })();
 </script>
 {% endblock %}

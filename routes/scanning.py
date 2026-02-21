@@ -1,9 +1,10 @@
 """Scanning routes — main scanning interface and HTMX endpoints."""
 
 import json
+import logging
 from flask import (
     Blueprint, render_template, request, session as flask_session,
-    redirect, url_for, make_response, Response, abort,
+    redirect, url_for, make_response, Response, abort, jsonify,
 )
 from flask_login import login_required, current_user
 from services import scan_service, session_service, export_service, spotcheck_service
@@ -379,3 +380,29 @@ def export_log(session_id):
             "Content-Disposition": f"attachment; filename=session_{sess.session_code}_log.csv"
         },
     )
+
+
+# ── Diagnostic endpoint for camera scanner debugging ──────────────
+logger = logging.getLogger(__name__)
+
+
+@bp.route("/camera-diag", methods=["POST"])
+@login_required
+def camera_diagnostic():
+    """Receive client-side camera scanner diagnostics and log them server-side."""
+    data = request.get_json(silent=True) or {}
+    logger.warning(
+        "[CAMERA-DIAG] user=%s | ua=%s | secure=%s | protocol=%s | "
+        "barcodeDetector=%s | toggleArea=%s | previewArea=%s | "
+        "formats=%s | error=%s",
+        current_user.username,
+        data.get("userAgent", "?"),
+        data.get("secureContext", "?"),
+        data.get("protocol", "?"),
+        data.get("barcodeDetector", "?"),
+        data.get("toggleArea", "?"),
+        data.get("previewArea", "?"),
+        data.get("supportedFormats", "?"),
+        data.get("error", "none"),
+    )
+    return jsonify({"ok": True})
