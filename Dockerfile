@@ -34,6 +34,12 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
+# Cache-busting: this ARG changes on every commit, forcing Docker to
+# invalidate the COPY layer (and everything after it) even when the
+# GHA layer cache would otherwise serve a stale result.
+ARG COMMIT_SHA
+ENV COMMIT_SHA=${COMMIT_SHA}
+
 # Copy application code
 COPY . .
 
