@@ -1904,3 +1904,13 @@ body {
     from { opacity: 1; transform: translateX(-50%) translateY(0); }
     to   { opacity: 0; transform: translateX(-50%) translateY(-20px); }
 }
+
+/* Wider toast on mobile portrait */
+@media (max-width: 768px) {
+    .camera-scan-toast {
+        width: 90vw;
+        max-width: 90vw;
+        padding: 10px 14px;
+        font-size: 0.9rem;
+    }
+}
