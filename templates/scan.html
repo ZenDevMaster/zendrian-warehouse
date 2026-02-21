@@ -76,6 +76,8 @@
                    placeholder="Scanner ready — waiting for input..."
                    autofocus>
         </form>
+        <!-- Camera toggle (populated by camera-scanner.js if BarcodeDetector available) -->
+        <div id="camera-toggle-area"></div>
     </div>
 
     <!-- Focus lost overlay -->
@@ -103,6 +105,9 @@
 
         <!-- Right: Sidebar -->
         <div class="scan-sidebar">
+            <!-- Camera scanner preview (populated by camera-scanner.js if BarcodeDetector available) -->
+            <div id="camera-preview-area"></div>
+
             <!-- Spot Check Locations Checklist -->
             {% if spotcheck_progress %}
             <div class="card sidebar-card spotcheck-checklist-card" id="spotcheck-checklist">
@@ -175,5 +180,31 @@
 <script>
     // Initialise scanner input management
     initScanner('scan-input', 'focus-overlay', 'scan-form');
+</script>
+<script>
+    // Camera barcode scanner — only load on supported browsers (Chrome Android)
+    console.log('[camera-scanner] Secure context:', window.isSecureContext);
+    console.log('[camera-scanner] BarcodeDetector available:', 'BarcodeDetector' in window);
+    console.log('[camera-scanner] Protocol:', location.protocol);
+    console.log('[camera-scanner] #camera-toggle-area exists:', !!document.getElementById('camera-toggle-area'));
+    console.log('[camera-scanner] #camera-preview-area exists:', !!document.getElementById('camera-preview-area'));
+    if ('BarcodeDetector' in window) {
+        console.log('[camera-scanner] Loading camera-scanner.js...');
+        var s = document.createElement('script');
+        s.src = "{{ url_for('static', filename='js/camera-scanner.js') }}";
+        s.onload = function() {
+            console.log('[camera-scanner] Script loaded, calling initCameraScanner()');
+            initCameraScanner();
+        };
+        s.onerror = function(e) {
+            console.error('[camera-scanner] Failed to load camera-scanner.js:', e);
+        };
+        document.head.appendChild(s);
+    } else {
+        console.log('[camera-scanner] BarcodeDetector NOT available. Likely causes:');
+        console.log('  1. Not a secure context (need HTTPS or localhost) — isSecureContext:', window.isSecureContext);
+        console.log('  2. Not Chrome Android (desktop Chrome does NOT support BarcodeDetector)');
+        console.log('  3. Chrome version < 83');
+    }
 </script>
 {% endblock %}
