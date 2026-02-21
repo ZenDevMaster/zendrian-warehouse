@@ -72,10 +72,15 @@
                    autocapitalize="off"
                    autocorrect="off"
                    spellcheck="false"
+                   enterkeyhint="send"
                    class="scan-input-field"
                    placeholder="Scanner ready — waiting for input..."
                    autofocus>
         </form>
+        <label class="keyboard-toggle" id="keyboard-toggle-area">
+            <input type="checkbox" id="hide-keyboard-toggle">
+            <span class="keyboard-toggle-label">⌨️ Hide KB</span>
+        </label>
         <!-- Camera toggle (populated by camera-scanner.js if BarcodeDetector available) -->
         <div id="camera-toggle-area"></div>
     </div>
@@ -87,6 +92,9 @@
             <span>Tap here to re-enable scanner</span>
         </div>
     </div>
+
+    <!-- Mobile camera mount point - camera preview moves here on mobile -->
+    <div id="mobile-camera-mount"></div>
 
     <!-- Main content area -->
     <div class="scan-content">

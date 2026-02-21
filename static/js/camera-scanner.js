@@ -44,6 +44,27 @@
     // ── Global flag: suppress focus overlay while camera is active ──
     window._cameraScannerActive = false;
 
+    // ── Mobile camera repositioning ─────────────────────────────
+    var MOBILE_BREAKPOINT = 768;
+
+    function isMobileView() {
+        return window.innerWidth <= MOBILE_BREAKPOINT;
+    }
+
+    function moveCameraToMobileMount() {
+        var mount = document.getElementById('mobile-camera-mount');
+        if (mount && previewCard && previewCard.parentNode !== mount) {
+            mount.appendChild(previewCard);
+        }
+    }
+
+    function moveCameraToSidebar() {
+        var sidebarArea = document.getElementById('camera-preview-area');
+        if (sidebarArea && previewCard && previewCard.parentNode !== sidebarArea) {
+            sidebarArea.appendChild(previewCard);
+        }
+    }
+
     // ── Entry point (called from scan.html after script loads) ──
     window.initCameraScanner = function () {
         console.log('[camera-scanner] initCameraScanner() called');
@@ -184,7 +205,17 @@
             previewArea.appendChild(previewCard);
         }
 
-        // 3. Visibility API — pause/resume when tab hidden
+        // 3. Handle viewport resize — move camera between mount points
+        window.addEventListener('resize', function () {
+            if (!window._cameraScannerActive || !previewCard) return;
+            if (isMobileView()) {
+                moveCameraToMobileMount();
+            } else {
+                moveCameraToSidebar();
+            }
+        });
+
+        // 4. Visibility API — pause/resume when tab hidden
         document.addEventListener('visibilitychange', function () {
             if (!scanning) return;
             if (document.hidden) {
@@ -200,6 +231,16 @@
         if (previewCard) previewCard.style.display = '';
         if (toggleLabel) toggleLabel.classList.add('active');
         window._cameraScannerActive = true;
+
+        // Suppress keyboard when camera is active
+        if (window.setScanInputMode) {
+            window.setScanInputMode('none');
+        }
+
+        // Move camera to mobile mount point if on mobile
+        if (isMobileView()) {
+            moveCameraToMobileMount();
+        }
 
         // Suppress focus overlay
         var focusOverlay = document.getElementById('focus-overlay');
@@ -217,6 +258,19 @@
 
         if (previewCard) previewCard.style.display = 'none';
         hideStatus();
+
+        // Move camera back to sidebar
+        moveCameraToSidebar();
+
+        // Restore keyboard based on user's toggle preference
+        var hideKbToggle = document.getElementById('hide-keyboard-toggle');
+        if (window.setScanInputMode) {
+            if (hideKbToggle && hideKbToggle.checked) {
+                window.setScanInputMode('none');
+            } else {
+                window.setScanInputMode('text');
+            }
+        }
 
         // Re-focus scan input for keyboard scanner
         if (typeof refocusInput === 'function') refocusInput();
@@ -361,6 +415,16 @@
 
         // Visual flash on viewfinder
         flashViewfinder();
+
+        // After detection, ensure camera stays visible on mobile
+        if (isMobileView()) {
+            setTimeout(function () {
+                var mount = document.getElementById('mobile-camera-mount');
+                if (mount && mount.children.length > 0) {
+                    mount.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 300);
+        }
     }
 
     function flashViewfinder() {

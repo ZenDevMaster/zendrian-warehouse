@@ -73,7 +73,50 @@ function initScanner(inputId, overlayElId, formElId) {
 
     // Initial focus
     input.focus();
+
+    // Keyboard toggle initialization
+    var hideKbToggle = document.getElementById('hide-keyboard-toggle');
+    var hideKbLabel = document.getElementById('keyboard-toggle-area');
+
+    if (hideKbToggle && hideKbLabel) {
+        // Restore saved preference
+        var savedPref = localStorage.getItem('zendrian_hide_keyboard');
+        if (savedPref === 'true') {
+            hideKbToggle.checked = true;
+            hideKbLabel.classList.add('active');
+            input.setAttribute('inputmode', 'none');
+        }
+
+        hideKbToggle.addEventListener('change', function() {
+            var hide = hideKbToggle.checked;
+            localStorage.setItem('zendrian_hide_keyboard', hide);
+            hideKbLabel.classList.toggle('active', hide);
+
+            if (hide) {
+                input.setAttribute('inputmode', 'none');
+                // Briefly blur to dismiss keyboard, then refocus
+                input.blur();
+                setTimeout(function() { input.focus(); }, 50);
+            } else {
+                // Only restore if camera scanner isn't active
+                if (!window._cameraScannerActive) {
+                    input.setAttribute('inputmode', 'text');
+                }
+            }
+        });
+    }
 }
+
+// Called by camera-scanner.js to suppress/restore keyboard
+window.setScanInputMode = function(mode) {
+    var input = document.getElementById('scan-input');
+    if (!input) return;
+    input.setAttribute('inputmode', mode);
+    if (mode === 'none') {
+        input.blur();
+        setTimeout(function() { input.focus(); }, 50);
+    }
+};
 
 function refocusInput() {
     const input = document.getElementById(scanInputId);

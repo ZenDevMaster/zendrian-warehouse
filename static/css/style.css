@@ -976,16 +976,70 @@ body {
         font-size: 0.8rem;
     }
 
+    /* --- Mobile Font Compression --- */
+
+    /* Location banner */
     .location-banner {
-        font-size: 1.1rem;
+        font-size: 1rem;
+        padding: 6px 12px;
     }
 
+    /* Mode banner */
+    .mode-banner {
+        font-size: 0.8rem;
+        padding: 4px 12px;
+    }
+
+    /* Session name banner */
+    .session-name-banner {
+        font-size: 0.8rem;
+        padding: 4px 12px;
+    }
+
+    /* Feedback toast area */
+    .feedback-toast {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+    }
+
+    /* Inventory table */
+    .inventory-table {
+        font-size: 0.75rem;
+    }
+    .inventory-table th,
+    .inventory-table td {
+        padding: 4px 6px;
+    }
+
+    /* History items */
     .history-item {
         grid-template-columns: 40px 1fr auto;
+        font-size: 0.8rem;
+        padding: 6px 8px;
     }
 
     .history-location {
         display: none;
+    }
+
+    /* Stats bar */
+    .stat-value {
+        font-size: 0.85rem;
+    }
+    .stat-label {
+        font-size: 0.65rem;
+    }
+
+    /* Sidebar cards */
+    .sidebar-card .card-header {
+        font-size: 0.85rem;
+        padding: 8px 10px;
+    }
+
+    /* Scan input field - slightly smaller on mobile */
+    .scan-input-field {
+        font-size: 0.95rem;
+        padding: 10px 12px;
     }
 
     .session-card {
@@ -1534,6 +1588,43 @@ body {
     border-color: #4caf50;
 }
 
+/* Keyboard hide toggle */
+.keyboard-toggle {
+    display: none;  /* Hidden on desktop by default */
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.keyboard-toggle:hover {
+    border-color: var(--primary);
+}
+
+.keyboard-toggle input[type="checkbox"] {
+    display: none;
+}
+
+.keyboard-toggle.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+@media (max-width: 768px) {
+    .keyboard-toggle {
+        display: flex;
+    }
+}
+
 /* Camera preview container */
 .camera-preview-card {
     background: #1a1a2e;
@@ -1706,10 +1797,29 @@ body {
         border-radius: 0;
     }
 
+    /* Camera viewfinder - use 16:9 on mobile to save vertical space */
+    .camera-viewfinder {
+        aspect-ratio: 16/9;
+    }
+
     .viewfinder-guide {
         width: 80%;
-        height: 30%;
+        height: 40%;
     }
+}
+
+/* --- Mobile Camera Mount --- */
+#mobile-camera-mount {
+    padding: 0 16px;
+}
+
+#mobile-camera-mount:empty {
+    display: none;
+}
+
+#mobile-camera-mount .camera-preview-card {
+    margin: 0 0 8px 0;
+    border-radius: 12px;
 }
 
 @media (max-width: 768px) {

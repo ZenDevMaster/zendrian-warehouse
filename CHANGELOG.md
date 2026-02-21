@@ -1,4 +1,26 @@
 
+1.2.0 Mobile UX Improvements
+
+Added:
+- Hamburger menu for mobile portrait mode (≤768px) — nav bar compresses to title + ☰ button with slide-down menu containing Dashboard, Admin Panel, user info, and Logout
+- "⌨️ Hide KB" toggle on scan page to suppress soft keyboard when using external barcode scanners — preference persisted in localStorage
+- `enterkeyhint="send"` attribute on scan input for better mobile keyboard UX
+- Mobile camera mount point — camera preview relocates above scan content on mobile for better visibility
+- `scrollIntoView()` after barcode detection to keep camera visible on mobile after rescans
+- Comprehensive mobile font compression for location banner, mode banner, session banner, feedback toast, inventory table, history items, stats bar, sidebar cards, and scan input
+
+Changed:
+- Camera viewfinder aspect ratio changes from 4:3 to 16:9 on mobile portrait to save vertical space
+- Viewfinder guide dimensions adjusted to 80% × 40% on mobile for 16:9 compatibility
+- Keyboard automatically suppressed when camera scanner is active; restored based on user preference when camera deactivates
+
+Files modified:
+- `templates/base.html` — hamburger menu HTML, CSS, and JavaScript
+- `templates/scan.html` — keyboard toggle, mobile camera mount, input attributes
+- `static/css/style.css` — keyboard toggle styles, font compression, camera mobile styles
+- `static/js/scanner.js` — keyboard toggle logic, `setScanInputMode()` API
+- `static/js/camera-scanner.js` — camera DOM relocation, keyboard integration, scroll management
+
 1.1.1 Fix: Double beep on camera barcode scan
 
 - Fixed duplicate audio feedback when scanning barcodes via the camera scanner
