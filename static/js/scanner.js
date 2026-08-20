@@ -26,8 +26,83 @@ function initScanner(inputId, overlayElId, formElId) {
 
     if (!input) return;
 
+    // Opt-in trace for diagnosing keyboard-wedge scanners on mobile devices.
+    const inputLog = [];
+    let inputLogEnabled = false;
+    let inputLogPanel = null;
+    let pendingAndroidComposition = null;
+    let sawAndroidCompositionKey = false;
+
+    function recordInputEvent(name, detail) {
+        if (!inputLogEnabled) return;
+        inputLog.push({
+            time: new Date().toISOString().slice(11, 23),
+            name: name,
+            detail: detail,
+            value: input.value,
+        });
+        if (inputLog.length > 100) inputLog.shift();
+        inputLogPanel.value = inputLog.map(function (entry) {
+            return entry.time + ' ' + entry.name + ' ' + entry.detail + ' value="' + entry.value + '"';
+        }).join('\n');
+        inputLogPanel.scrollTop = inputLogPanel.scrollHeight;
+    }
+
+    function createInputLog() {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = 'Input Log';
+        button.style.cssText = 'padding:6px 10px;border:1px solid #64748b;border-radius:6px;background:#fff;color:#334155;font-size:.85rem;white-space:nowrap;';
+
+        inputLogPanel = document.createElement('textarea');
+        inputLogPanel.readOnly = true;
+        inputLogPanel.style.cssText = 'display:none;position:fixed;z-index:2000;left:12px;right:12px;bottom:12px;height:220px;padding:10px;background:#0f172a;color:#e2e8f0;border:1px solid #64748b;border-radius:8px;font:12px monospace;';
+        inputLogPanel.setAttribute('aria-label', 'Scanner input log');
+        document.body.appendChild(inputLogPanel);
+
+        button.addEventListener('click', function () {
+            inputLogEnabled = !inputLogEnabled;
+            inputLog.length = 0;
+            inputLogPanel.value = '';
+            inputLogPanel.style.display = inputLogEnabled ? 'block' : 'none';
+            button.textContent = inputLogEnabled ? 'Stop Log' : 'Input Log';
+            button.style.background = inputLogEnabled ? '#dbeafe' : '#fff';
+            if (inputLogEnabled) {
+                recordInputEvent('log', 'started inputmode=' + input.getAttribute('inputmode'));
+            }
+        });
+
+        input.parentElement.parentElement.appendChild(button);
+    }
+
+    createInputLog();
+
+    input.addEventListener('beforeinput', function (e) {
+        recordInputEvent('beforeinput', 'type=' + e.inputType + ' data=' + JSON.stringify(e.data));
+        if (sawAndroidCompositionKey &&
+            e.inputType === 'insertCompositionText' &&
+            /^\d$/.test(e.data || '')) {
+            pendingAndroidComposition = {
+                digit: e.data,
+                value: input.value,
+                time: Date.now(),
+            };
+            setTimeout(function () { pendingAndroidComposition = null; }, 100);
+        }
+        sawAndroidCompositionKey = false;
+    });
+
+    input.addEventListener('input', function (e) {
+        recordInputEvent('input', 'type=' + e.inputType + ' data=' + JSON.stringify(e.data));
+    });
+
+    input.addEventListener('keyup', function (e) {
+        recordInputEvent('keyup', 'key=' + JSON.stringify(e.key) + ' code=' + e.code + ' keyCode=' + e.keyCode);
+    });
+
     // Focus management
     input.addEventListener('blur', function () {
+        recordInputEvent('blur', '');
         // Small delay to allow HTMX form submission to complete
         setTimeout(function () {
             if (document.activeElement !== input &&
@@ -40,6 +115,21 @@ function initScanner(inputId, overlayElId, formElId) {
 
     // Submit on Enter, prevent default form submission (HTMX handles it)
     input.addEventListener('keydown', function (e) {
+        if (pendingAndroidComposition &&
+            (Date.now() - pendingAndroidComposition.time) < 100 &&
+            e.key === pendingAndroidComposition.digit &&
+            e.code === 'Digit' + pendingAndroidComposition.digit) {
+            // Do not remove without testing Android keyboard-wedge scanners.
+            // Chrome on the warehouse tablet emits keyCode 229 followed by an
+            // insertCompositionText digit, then the scanner's real DigitN key.
+            // Removing the composition digit here preserves normal text input
+            // while preventing the duplicated leading digit in SKU scans.
+            input.value = pendingAndroidComposition.value;
+            recordInputEvent('composition', 'removed duplicate Android IME digit');
+            pendingAndroidComposition = null;
+        }
+        sawAndroidCompositionKey = e.keyCode === 229;
+        recordInputEvent('keydown', 'key=' + JSON.stringify(e.key) + ' code=' + e.code + ' keyCode=' + e.keyCode);
         if (e.key === 'Enter') {
             e.preventDefault();
 
@@ -54,6 +144,7 @@ function initScanner(inputId, overlayElId, formElId) {
             lastSubmitTime = now;
 
             // Trigger HTMX submission
+            recordInputEvent('submit', '');
             htmx.trigger(document.getElementById(formId), 'submit');
         }
     });
@@ -63,7 +154,9 @@ function initScanner(inputId, overlayElId, formElId) {
         setTimeout(function () {
             const inp = document.getElementById(scanInputId);
             if (inp) {
+                recordInputEvent('afterSwap', 'before clear');
                 inp.value = '';
+                recordInputEvent('afterSwap', 'after clear');
                 // Skip focus when camera scanner is active to prevent
                 // the browser from scrolling away from the viewfinder
                 if (!window._cameraScannerActive) {
