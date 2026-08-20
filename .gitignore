@@ -44,3 +44,4 @@ plans/
 
 # Node.js (puppeteer for screenshots)
 node_modules/
+.srclight/

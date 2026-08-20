@@ -271,13 +271,7 @@
 
         // Send diagnostics to server
         function sendDiag() {
-            try {
-                fetch("{{ url_for('scanning.camera_diagnostic') }}", {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(diag)
-                });
-            } catch(e) {}
+            // Optional client diagnostics remain available in the π modal.
         }
 
         // Create the π UI immediately

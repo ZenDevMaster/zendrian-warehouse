@@ -1,0 +1,6 @@
+--- app.py
++++ app.py
+@@ -45,0 +46 @@
++    from routes.api import api_bp
+@@ -51,0 +52 @@
++    app.register_blueprint(api_bp)

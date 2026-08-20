@@ -43,11 +43,13 @@ def create_app(config_class=Config):
     from routes.dashboard import bp as dashboard_bp
     from routes.scanning import bp as scanning_bp
     from routes.admin import admin_bp
+    from routes.api import api_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(scanning_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(api_bp)
 
     # Create tables and seed default user
     with app.app_context():

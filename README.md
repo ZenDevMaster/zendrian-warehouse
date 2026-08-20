@@ -72,8 +72,35 @@ Configuration is managed via environment variables or [`config.py`](config.py). 
 | `MIN_SCAN_INTERVAL`  | `0.7`          | Minimum seconds between duplicate scans |
 | `DEFAULT_ADMIN_USER` | `admin`        | Default admin username (first run only) |
 | `DEFAULT_ADMIN_PASS` | `warehouse`    | Default admin password (first run only) |
+| `STOCKTAKE_READ_API_TOKEN` | Disabled | Bearer token for read-only inventory API |
 
 The SQLite database is stored at `instance/zendrian_warehouse.db` by default.
+
+### Read-only API
+
+Set `STOCKTAKE_READ_API_TOKEN` in the production environment. The API exposes
+existing session and inventory records only; it has no write routes and does
+not download or replace the database.
+
+```bash
+curl -fsS -H "Authorization: Bearer $STOCKTAKE_READ_API_TOKEN" \
+  "https://WAREHOUSE_HOST/api/v1/sessions?owner=niel&closed_only=true&limit=10"
+
+curl -fsS -H "Authorization: Bearer $STOCKTAKE_READ_API_TOKEN" \
+  "https://WAREHOUSE_HOST/api/v1/inventory/latest?owner=niel&closed_only=true"
+
+curl -fsS -H "Authorization: Bearer $STOCKTAKE_READ_API_TOKEN" \
+  "https://WAREHOUSE_HOST/api/v1/inventory/by-date?owner=niel&closed_only=true&date=2026-08-10"
+
+curl -fsS -H "Authorization: Bearer $STOCKTAKE_READ_API_TOKEN" \
+  "https://WAREHOUSE_HOST/api/v1/sessions/SESSION_ID/inventory"
+```
+
+The latest endpoint returns both location-level rows and aggregated SKU totals.
+Use `inventory/by-date` for Niel's weekly count because one count may be split
+across multiple sessions on the same day.
+Omit `closed_only=true` only when an in-progress Monday count is intentionally
+needed. Use `since=YYYY-MM-DDTHH:MM:SS` to constrain session history.
 
 ### Production (Gunicorn)
 
